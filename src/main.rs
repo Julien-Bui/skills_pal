@@ -5,6 +5,7 @@ use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tower_http::cors::CorsLayer;
 
+mod config;
 mod models;
 mod database;
 mod errors;
