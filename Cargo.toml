@@ -2,6 +2,20 @@
 name = "skills_pal"
 version = "0.1.0"
 edition = "2021"
+description = "Un outil CLI propulsé par l'IA pour analyser la dette technique et recommander des plugins de productivité."
+license = "MIT"
+repository = "https://github.com/ton_pseudo/skills_pal"
+keywords = ["cli", "ai", "productivity", "rust"]
+categories = ["command-line-utilities", "development-tools"]
+default-run = "skills_pal"
+
+[[bin]]
+name = "skills_pal"
+path = "src/main.rs"
+
+[[bin]]
+name = "server"
+path = "src/server/main.rs"
 
 [dependencies]
 tokio = { version = "1.0", features = ["full"] }
@@ -13,3 +27,8 @@ serde_json = "1.0"
 reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
 zip = "2.1"
 walkdir = "2.5"
+
+# Server specific dependencies
+axum = "0.7"
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
+chrono = "0.4"
