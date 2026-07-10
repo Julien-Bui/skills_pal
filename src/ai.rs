@@ -2,9 +2,41 @@ use crate::config;
 use reqwest::Client;
 use std::fs;
 use serde_json::json;
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+struct RemoteSkill {
+    name: String,
+    description: String,
+    github_url: String,
+}
 
 pub async fn run_recommendation() -> Result<(), String> {
     let conf = config::get_config()?;
+    let client = Client::builder()
+        .user_agent("Skills-Pal-CLI/1.0")
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    println!("Contact du registre Railway pour récupérer la liste des skills...");
+    let mut remote_skills = Vec::new();
+    
+    if let Some(registry) = &conf.registry_url {
+        let registry_url = format!("{}/api/skills", registry.trim_end_matches('/'));
+        match client.get(&registry_url).send().await {
+            Ok(res) => {
+                if res.status().is_success() {
+                    if let Ok(skills) = res.json::<Vec<RemoteSkill>>().await {
+                        remote_skills = skills;
+                        println!("✅ {} skills récupérés depuis le registre !", remote_skills.len());
+                    }
+                } else {
+                    println!("⚠️ Erreur du registre: {}", res.status());
+                }
+            },
+            Err(e) => println!("⚠️ Impossible de contacter le registre: {}", e),
+        }
+    }
 
     println!("Analyse du contexte du projet local...");
     
@@ -29,8 +61,15 @@ pub async fn run_recommendation() -> Result<(), String> {
     println!("Stack détectée : {}", stack);
     println!("Contact de l'IA ({}) pour obtenir des recommandations...", conf.provider.to_uppercase());
 
-    let client = Client::new();
-    let prompt_system = "Tu es l'IA de Skills Pal. Propose 2 ou 3 outils/plugins pertinents pour analyser la dette technique du projet basé sur la stack fournie. Réponds de manière concise.";
+    let mut prompt_system = "Tu es l'IA de Skills Pal. Propose 2 ou 3 outils/plugins pertinents pour analyser la dette technique du projet basé sur la stack fournie. Réponds de manière concise.".to_string();
+    
+    if !remote_skills.is_empty() {
+        prompt_system.push_str("\n\nVoici la base de données de plugins existants. Tu DOIS prioriser les recommandations de CES plugins si tu penses qu'ils sont pertinents (fournis leur URL) :\n");
+        for skill in remote_skills.iter().take(20) {
+            prompt_system.push_str(&format!("- {} ({}): {}\n", skill.name, skill.github_url, skill.description));
+        }
+    }
+
     let prompt_user = format!("Le projet utilise : {}", stack);
     
     let reply = match conf.provider.to_lowercase().as_str() {
