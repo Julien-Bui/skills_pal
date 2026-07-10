@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/ton_pseudo/skills_pal"
 keywords = ["cli", "ai", "productivity", "rust"]
 categories = ["command-line-utilities", "development-tools"]
-default-run = "skills_pal"
+default-run = "server"
 
 [[bin]]
 name = "skills_pal"
