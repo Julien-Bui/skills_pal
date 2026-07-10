@@ -30,17 +30,24 @@ Fini le code monolithique et obsolète. Laisse l'IA te guider vers les meilleurs
 
 ---
 
-## 🚀 Installation Rapide (Pour tous les développeurs)
+## 🚀 Installation Universelle (La plus simple)
 
-Grâce à notre pipeline CI/CD automatisé, **pas besoin de cloner le projet ou d'installer Rust** !
+Notre script d'installation magique télécharge le binaire compilé pour ton système. Aucun prérequis (ni Rust, ni Node, ni Python) n'est nécessaire !
 
-1. Va dans l'onglet [**Releases**](https://github.com/Julien-Bui/skills_pal/releases) de ce dépôt GitHub.
-2. Télécharge l'archive correspondant à ton système d'exploitation (`windows`, `macos`, ou `linux`).
-3. Extrais l'exécutable `skills_pal` et place-le dans un dossier de ton choix (idéalement ajouté à ton `PATH`).
-4. Ouvre ton terminal et lance la configuration initiale :
-   ```bash
-   skills_pal init
-   ```
+**Sur Mac / Linux :**
+```bash
+curl -fsSL https://raw.githubusercontent.com/Julien-Bui/skills_pal/main/install.sh | bash
+```
+
+**Sur Windows (PowerShell) :**
+```powershell
+iwr https://raw.githubusercontent.com/Julien-Bui/skills_pal/main/install.ps1 -useb | iex
+```
+
+Une fois installé, tu peux lancer la configuration initiale n'importe où :
+```bash
+skills_pal init
+```
 
 ---
 
