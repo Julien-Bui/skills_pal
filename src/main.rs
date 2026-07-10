@@ -7,6 +7,7 @@ mod models;
 mod database;
 mod handlers;
 mod analyzer;
+mod downloader;
 
 #[tokio::main]
 async fn main() 
@@ -17,7 +18,8 @@ async fn main()
     let app = Router::new()
         .route("/api/skills", get(handlers::get_skills).post(handlers::add_skill))
         .route("/api/skills/:id", delete(handlers::delete_skill))
-        .route("/api/settings/keys", post(handlers::save_api_key));
+        .route("/api/settings/keys", post(handlers::save_api_key))
+        .route("/api/analyze", post(handlers::analyze_project));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Serveur API en écoute sur http://{}", addr);
