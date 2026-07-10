@@ -1,0 +1,12 @@
+src/
+target/
+tests/
+benches/
+.github/
+.gitignore
+Cargo.toml
+Cargo.lock
+install.sh
+install.ps1
+nixpacks.toml
+Procfile
