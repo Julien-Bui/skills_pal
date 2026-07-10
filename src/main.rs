@@ -31,13 +31,43 @@ async fn main() {
             println!("Lancement du scan sur {}...", current_dir);
             match analyzer::scan_project(current_dir).await {
                 Ok(reports) => {
-                    for r in reports {
-                        let path = r.file_path;
-                        let line = r.line_number.map(|l| l.to_string()).unwrap_or_default();
-                        println!("[{}] {}:{} -> {}", r.severity.to_uppercase(), path, line, r.message);
+                    if reports.is_empty() {
+                        println!("✅ Aucun TODO ni FIXME trouvé. Ton projet est parfaitement clean !");
+                    } else {
+                        for r in reports {
+                            let path = r.file_path;
+                            let line = r.line_number.map(|l| l.to_string()).unwrap_or_default();
+                            println!("[{}] {}:{} -> {}", r.severity.to_uppercase(), path, line, r.message);
+                        }
                     }
                 },
                 Err(e) => eprintln!("Erreur lors de l'analyse: {}", e),
+            }
+        },
+        cli::Commands::Update => {
+            println!("Recherche de mises à jour sur Github...");
+            let status = self_update::backends::github::Update::configure()
+                .repo_owner("Julien-Bui")
+                .repo_name("skills_pal")
+                .bin_name("skills_pal")
+                .show_download_progress(true)
+                .current_version(env!("CARGO_PKG_VERSION"))
+                .build();
+                
+            match status {
+                Ok(updater) => {
+                    match updater.update() {
+                        Ok(status) => {
+                            if status.updated() {
+                                println!("✅ Skills Pal a été mis à jour avec succès vers la version {} !", status.version());
+                            } else {
+                                println!("✨ Tu as déjà la dernière version ({}) !", status.version());
+                            }
+                        },
+                        Err(e) => eprintln!("❌ Erreur lors de la mise à jour: {}", e),
+                    }
+                },
+                Err(e) => eprintln!("❌ Erreur de configuration de la mise à jour: {}", e),
             }
         }
     }

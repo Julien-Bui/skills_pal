@@ -16,4 +16,6 @@ pub enum Commands {
     Recom,
     /// Scanne le projet avec les plugins installés
     Scan,
+    /// Met à jour l'outil vers la dernière version disponible sur Github
+    Update,
 }

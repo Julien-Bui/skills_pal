@@ -75,6 +75,12 @@ Analyse le code source de ton projet pour trouver la dette technique explicite (
 skills_pal scan
 ```
 
+### 4. Mise à Jour Automatique
+Télécharge et installe automatiquement la dernière version de Skills Pal depuis Github.
+```bash
+skills_pal update
+```
+
 ---
 
 ## 🌍 Architecture & Déploiement (Pour les contributeurs)
