@@ -1,6 +1,6 @@
 <div align="center">
-  <h1>🧠 Skills Pal</h1>
-  <p><strong>L'assistant IA ultime pour éradiquer la dette technique et recommander des plugins de productivité.</strong></p>
+  <h1>👋 Salut, voici Skills Pal ! 🧠</h1>
+  <p><strong>Ton compagnon IA personnel pour nettoyer ton code et te faire découvrir les meilleurs outils.</strong></p>
   
   [![Rust](https://img.shields.io/badge/Rust-1.88.0-orange.svg)](https://www.rust-lang.org)
   [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -9,113 +9,71 @@
 
 <br />
 
-## 🌟 Présentation
+## 🌟 C'est quoi au juste ?
 
-**Skills Pal** est un outil innovant divisé en deux parties (Architecture Client/Serveur) :
-1. **Un CLI ultra-rapide (Client)** : Scanne ton code source localement, identifie la dette technique ou le manque d'optimisation, et interroge une IA (OpenAI / Mistral) pour te recommander des plugins ou des compétences à adopter.
-2. **Un Serveur distant (Backend)** : Hébergé sur Railway, il scrape automatiquement GitHub toutes les 12h pour découvrir les nouveaux plugins créés par la communauté et met à jour sa base de données PostgreSQL pour te fournir des recommandations toujours à la pointe.
+Tu sais, ce moment où tu regardes ton code et tu te dis *"il doit y avoir un outil pour faire ça mieux que moi"* ? C'est exactement pour ça qu'on a créé **Skills Pal**.
 
-Fini le code monolithique et obsolète. Laisse l'IA te guider vers les meilleurs outils de l'écosystème open-source !
+C'est un petit outil de ligne de commande (CLI) ultra-rapide qui vient scanner ton projet (peu importe le langage). Il lit tes fichiers, discute avec une intelligence artificielle (OpenAI ou Mistral, au choix !), et te recommande les plugins ou outils parfaits pour améliorer ton code ou te débarrasser de ta dette technique.
 
----
-
-## ✨ Fonctionnalités Principales
-
-- 🤖 **Analyse IA Intelligente** : Fournit des recommandations de plugins basées sur l'analyse sémantique de ton code via LLM.
-- ⚡ **Multi-LLM** : Compatible avec les API OpenAI et Mistral AI.
-- 🌍 **Registre Communautaire Auto-Géré** : Le serveur découvre tout seul les plugins sur GitHub via le tag `skills-pal-plugin`.
-- 🚀 **Performances Natives** : Écrit intégralement en Rust. Consommation mémoire minimale et exécution instantanée.
-- 🛡️ **Sécurisé & Anti-DDoS** : Serveur protégé par un Rate-Limiter (100 req/sec) et sans injections SQL possibles.
-- 📦 **Installation Universelle** : Binaires autonomes disponibles pour Windows, macOS, et Linux sans besoin d'installer Rust.
+Et le meilleur ? Il est connecté à une base de données communautaire (hébergée sur Railway) qui se met à jour toute seule en fouillant Github !
 
 ---
 
-## 🚀 Installation Universelle (La plus simple)
+## 🚀 Comment l'installer en 1 seconde ?
 
-Notre script d'installation magique télécharge le binaire compilé pour ton système. Aucun prérequis (ni Rust, ni Node, ni Python) n'est nécessaire !
+Pas besoin d'installer Rust, Node.js ou de cloner le projet. On a rendu ça super simple. Ouvre ton terminal et colle cette ligne :
 
-**Sur Mac / Linux :**
+**🍎 Sur Mac ou Linux :**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Julien-Bui/skills_pal/main/install.sh | bash
 ```
 
-**Sur Windows (PowerShell) :**
+**🪟 Sur Windows (PowerShell) :**
 ```powershell
 iwr https://raw.githubusercontent.com/Julien-Bui/skills_pal/main/install.ps1 -useb | iex
 ```
 
-Une fois installé, tu peux lancer la configuration initiale n'importe où :
+Une fois que c'est fait, balade-toi dans n'importe quel dossier de ton ordinateur et lance la commande de bienvenue :
 ```bash
 skills_pal init
 ```
+*(Il te demandera juste ta clé API pour l'IA, et l'URL du serveur si tu en utilises un personnalisé !)*
 
 ---
 
-## 🛠️ Utilisation du CLI
+## 🛠️ Les commandes à connaître
 
-Le CLI est conçu pour être simple et direct. Voici les commandes principales :
+L'outil est super simple à utiliser. Tu as trois commandes magiques :
 
-### 1. Initialisation
-Crée le fichier de configuration `.skillspal.toml` à la racine de ton projet.
-```bash
-skills_pal init
-```
-*N'oublie pas d'y renseigner ta clé API (OpenAI ou Mistral) et l'URL de ton serveur Railway (`registry_url`).*
-
-### 2. Analyse et Recommandation
-L'outil va lire ton code, l'envoyer à l'IA avec le contexte des plugins communautaires disponibles, et te suggérer les meilleures solutions.
-```bash
-skills_pal recom
-```
-
-### 3. Scan des Plugins Existants
-Permet de voir quels plugins de la communauté tu as déjà intégrés ou configurés.
-```bash
-skills_pal scan
-```
+- `skills_pal init` : Crée ton fichier de configuration local. C'est la toute première étape.
+- `skills_pal recom` : C'est le cœur du projet ! L'IA regarde dans quoi tu codes (Go, Python, JS, etc.) et te sort les meilleures recommandations du moment.
+- `skills_pal scan` : Fait un rapide état des lieux des plugins que tu as déjà.
 
 ---
 
-## 🌍 Architecture & Déploiement (Pour les contributeurs)
+## 🧩 Tu veux proposer ton propre outil ?
 
-Ce dépôt contient deux binaires distincts :
+C'est un projet communautaire ! Si tu as créé un script génial, un linter, ou n'importe quel outil open-source et que tu veux que notre IA le recommande aux autres développeurs, c'est super facile :
 
-- **Le Client CLI** (`skills_pal`) : `src/main.rs`
-- **Le Serveur API** (`server`) : `src/server/main.rs`
-
-### Déployer son propre Serveur (Railway)
-
-Si tu souhaites héberger ta propre instance du registre de plugins :
-1. Connecte ton compte Railway à ton fork de ce dépôt GitHub.
-2. Provisionne une base de données **PostgreSQL**.
-3. Dans les variables d'environnement de ton service web, ajoute : `DATABASE_URL=postgresql://...`
-4. Dans **Settings > Deploy** de Railway :
-   - **Custom Build Command** : `cargo build --release --bin server && cp target/release/server ./server`
-   - **Custom Start Command** : `./server`
-
-Le serveur construira automatiquement les tables SQL, lancera son cache en RAM (0 latence), et commencera à scraper GitHub en arrière-plan.
+1. Va sur ton dépôt Github public.
+2. Ajoute simplement le tag **`skills-pal-plugin`** dans tes topics Github (en haut à droite ⚙️).
+3. Notre serveur passe toutes les 12 heures sur Github. Il verra ton dépôt et l'ajoutera automatiquement à la base de données. L'IA commencera à le proposer aux développeurs qui en ont besoin !
 
 ---
 
-## 🧩 Créer un Plugin pour Skills Pal
+## 🌍 Pour les curieux (Sous le capot)
 
-Tu as développé un outil ou un script génial et tu veux que Skills Pal le recommande aux autres développeurs ?
-Rien de plus simple :
+Si tu aimes regarder comment les choses sont faites, tu es au bon endroit. Le projet est divisé en deux morceaux, codés avec amour en **Rust** (pour que ce soit ultra rapide et léger) :
 
-1. Crée un dépôt public sur GitHub.
-2. Ajoute le topic (tag) **`skills-pal-plugin`** dans la description de ton dépôt (bouton ⚙️ en haut à droite).
-3. Le serveur backend de Skills Pal scannera GitHub et l'ajoutera automatiquement à son registre public sous 12h !
+1. **Le Client CLI** (`src/main.rs`) : C'est ce qui tourne sur ton ordinateur.
+2. **Le Serveur API** (`src/server/main.rs`) : C'est le cerveau central qui liste tous les plugins de la communauté. 
+   - Il tourne H24 sur Railway.
+   - Il stocke tout dans une base **PostgreSQL** (totalement sécurisée contre les injections).
+   - Il garde les données en mémoire vive (RAM) pour répondre en 0 milliseconde.
+   - Il se protège tout seul contre les spams avec un système anti-DDoS (Rate Limiter).
 
----
-
-## 🔒 Sécurité & Confidentialité
-
-- **Audit complet validé** : Protection intégrale contre les injections SQL (via Parameter Binding).
-- **Rate-Limiting Global** : Le serveur utilise `tower::limit::GlobalConcurrencyLimitLayer` pour prévenir les attaques DDoS et la saturation de la DB.
-- **Transparence** : Ton code source n'est envoyé qu'à l'API LLM de ton choix (OpenAI/Mistral) sans intermédiaire obscur. Les clés API sont stockées uniquement en local (`.skillspal.toml` est `.gitignore`).
-
----
+Si tu veux contribuer, corriger un bug ou héberger ton propre serveur, tu es plus que le bienvenu ! N'hésite pas à ouvrir une *Issue* ou une *Pull Request*. 
 
 <div align="center">
-  <i>Construit avec passion, Rust, et beaucoup de café ☕</i>
+  <i>Fait pour les développeurs, par des développeurs ☕</i>
 </div>
