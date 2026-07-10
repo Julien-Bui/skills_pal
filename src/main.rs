@@ -84,6 +84,8 @@ async fn main() {
                 config::PLUGINS_DIR,
                 config::DB_PATH,
                 config::CONFIG_FILE,
+                "skills_pal.zip",
+                "skills_pal.tar.gz"
             ];
             
             let mut cleaned_something = false;
