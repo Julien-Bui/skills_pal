@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .route("/api/skills", get(get_skills))
-        .layer(tower::limit::RateLimitLayer::new(100, std::time::Duration::from_secs(1)))
+        .layer(tower::limit::GlobalConcurrencyLimitLayer::new(100))
         .with_state(state);
 
     let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());

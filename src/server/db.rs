@@ -1,4 +1,4 @@
-use sqlx::{PgPool, postgres::PgPoolOptions};
+use sqlx::{PgPool, postgres::PgPoolOptions, Row};
 use crate::SkillResponse;
 
 pub async fn init_db(db_url: &str) -> Result<PgPool, sqlx::Error> {
@@ -24,7 +24,7 @@ pub async fn init_db(db_url: &str) -> Result<PgPool, sqlx::Error> {
 }
 
 pub async fn fetch_all_skills(pool: &PgPool) -> Result<Vec<SkillResponse>, sqlx::Error> {
-    let records = sqlx::query!(
+    let records = sqlx::query(
         "SELECT id, name, description, github_url FROM remote_skills ORDER BY id DESC"
     )
     .fetch_all(pool)
@@ -33,10 +33,10 @@ pub async fn fetch_all_skills(pool: &PgPool) -> Result<Vec<SkillResponse>, sqlx:
     let mut skills = Vec::new();
     for r in records {
         skills.push(SkillResponse {
-            id: r.id,
-            name: r.name,
-            description: r.description,
-            github_url: r.github_url,
+            id: r.get("id"),
+            name: r.get("name"),
+            description: r.get("description"),
+            github_url: r.get("github_url"),
         });
     }
 
@@ -44,12 +44,14 @@ pub async fn fetch_all_skills(pool: &PgPool) -> Result<Vec<SkillResponse>, sqlx:
 }
 
 pub async fn insert_skill(pool: &PgPool, name: &str, description: &str, github_url: &str) -> Result<(), sqlx::Error> {
-    sqlx::query!(
+    sqlx::query(
         "INSERT INTO remote_skills (name, description, github_url) 
          VALUES ($1, $2, $3) 
-         ON CONFLICT (github_url) DO NOTHING",
-        name, description, github_url
+         ON CONFLICT (github_url) DO NOTHING"
     )
+    .bind(name)
+    .bind(description)
+    .bind(github_url)
     .execute(pool)
     .await?;
 
