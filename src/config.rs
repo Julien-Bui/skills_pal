@@ -11,6 +11,7 @@ pub struct SkillsPalConfig {
     pub model: String,
     pub api_key: Option<String>,
     pub base_url: Option<String>,
+    pub registry_url: Option<String>,
 }
 
 pub fn init_config() -> Result<(), String> {
@@ -23,7 +24,8 @@ pub fn init_config() -> Result<(), String> {
         provider: "openai".to_string(),
         model: "gpt-3.5-turbo".to_string(),
         api_key: Some("VOTRE_CLE_ICI".to_string()),
-        base_url: Some("".to_string()), // Utilisé pour les API compatibles OpenAI (OpenRouter, Groq...) ou Ollama
+        base_url: Some("".to_string()), 
+        registry_url: Some("http://localhost:3000".to_string()), // Mettre l'URL de ton serveur Railway ici
     };
 
     let toml_string = toml::to_string(&config).map_err(|e| e.to_string())?;
