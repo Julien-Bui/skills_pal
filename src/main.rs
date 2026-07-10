@@ -6,6 +6,7 @@ use std::net::SocketAddr;
 mod models;
 mod database;
 mod handlers;
+mod analyzer;
 
 #[tokio::main]
 async fn main() 
