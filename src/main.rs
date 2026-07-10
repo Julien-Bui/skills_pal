@@ -1,6 +1,8 @@
 
 
-fn main() 
-{
-    println!("Hello, world!");
+mod models;
+mod database;
+
+fn main() {
+    println!("Skills Pal is starting...");
 }
