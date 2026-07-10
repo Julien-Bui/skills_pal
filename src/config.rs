@@ -25,7 +25,7 @@ pub fn init_config() -> Result<(), String> {
         model: "gpt-3.5-turbo".to_string(),
         api_key: Some("VOTRE_CLE_ICI".to_string()),
         base_url: Some("".to_string()), 
-        registry_url: Some("http://localhost:3000".to_string()), // Mettre l'URL de ton serveur Railway ici
+        registry_url: Some("https://skillspal-production-0511.up.railway.app".to_string()), // Serveur public par défaut
     };
 
     let toml_string = toml::to_string(&config).map_err(|e| e.to_string())?;

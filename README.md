@@ -69,8 +69,8 @@ L'outil va lire ton code, l'envoyer à l'IA avec le contexte des plugins communa
 skills_pal recom
 ```
 
-### 3. Scan des Plugins Existants
-Permet de voir quels plugins de la communauté tu as déjà intégrés ou configurés.
+### 3. Scan de la Dette Technique
+Analyse le code source de ton projet pour trouver la dette technique explicite (commentaires `TODO`, `FIXME`) et les avertissements de compilation.
 ```bash
 skills_pal scan
 ```

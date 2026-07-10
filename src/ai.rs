@@ -21,21 +21,26 @@ pub async fn run_recommendation() -> Result<(), String> {
     println!("Contact du registre Railway pour récupérer la liste des skills...");
     let mut remote_skills = Vec::new();
     
-    if let Some(registry) = &conf.registry_url {
-        let registry_url = format!("{}/api/skills", registry.trim_end_matches('/'));
-        match client.get(&registry_url).send().await {
-            Ok(res) => {
-                if res.status().is_success() {
-                    if let Ok(skills) = res.json::<Vec<RemoteSkill>>().await {
-                        remote_skills = skills;
-                        println!("✅ {} skills récupérés depuis le registre !", remote_skills.len());
-                    }
-                } else {
-                    println!("⚠️ Erreur du registre: {}", res.status());
-                }
-            },
-            Err(e) => println!("⚠️ Impossible de contacter le registre: {}", e),
+    let mut registry = "https://skillspal-production-0511.up.railway.app".to_string();
+    if let Some(url) = &conf.registry_url {
+        if !url.is_empty() {
+            registry = url.clone();
         }
+    }
+
+    let registry_url = format!("{}/api/skills", registry.trim_end_matches('/'));
+    match client.get(&registry_url).send().await {
+        Ok(res) => {
+            if res.status().is_success() {
+                if let Ok(skills) = res.json::<Vec<RemoteSkill>>().await {
+                    remote_skills = skills;
+                    println!("✅ {} skills récupérés depuis le registre !", remote_skills.len());
+                }
+            } else {
+                println!("⚠️ Erreur du registre: {}", res.status());
+            }
+        },
+        Err(e) => println!("⚠️ Impossible de contacter le registre: {}", e),
     }
 
     println!("Analyse dynamique du projet (Agonostique au langage)...");

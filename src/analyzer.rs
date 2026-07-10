@@ -59,7 +59,7 @@ pub async fn scan_project(project_path: String) -> Result<Vec<Report>, String> {
             continue;
         }
 
-        if entry.file_type().is_file() && (path_str.ends_with(".rs") || path_str.ends_with(".js") || path_str.ends_with(".html")) {
+        if entry.file_type().is_file() && (path_str.ends_with(".rs") || path_str.ends_with(".js") || path_str.ends_with(".ts") || path_str.ends_with(".jsx") || path_str.ends_with(".tsx") || path_str.ends_with(".vue") || path_str.ends_with(".svelte") || path_str.ends_with(".html") || path_str.ends_with(".css")) {
             if let Ok(content) = fs::read_to_string(entry.path()) {
                 for (i, line) in content.lines().enumerate() {
                     // On cherche les TODO mais on exclut cette propre ligne pour éviter la boucle infinie !
