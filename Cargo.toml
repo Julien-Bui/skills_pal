@@ -4,18 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# Le moteur asynchrone pour faire tourner notre serveur
 tokio = { version = "1.0", features = ["full"] }
-
-# Le framework web pour gérer le localhost:3000
-axum = "0.7"
-
-# La base de données SQL locale
+clap = { version = "4.4", features = ["derive"] }
+toml = "0.8"
 rusqlite = { version = "0.31", features = ["bundled"] }
-
-# Pour formater et comprendre le JSON (échange de données avec le localhost)
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-# Pour servir les fichiers HTML/JS/CSS et gérer la sécurité (CORS)
-tower-http = { version = "0.5", features = ["fs", "cors"] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+zip = "2.1"
+walkdir = "2.5"
