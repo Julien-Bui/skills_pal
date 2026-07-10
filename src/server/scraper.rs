@@ -36,7 +36,7 @@ pub fn start_background_scraper(state: Arc<AppState>) {
 }
 
 async fn scrape_github(client: &Client, state: &Arc<AppState>) -> Result<(), Box<dyn std::error::Error>> {
-    let query = "topic:skills-pal";
+    let query = "topic:skills-pal-plugin";
     let url = format!("https://api.github.com/search/repositories?q={}", query);
     
     let res = client.get(&url).send().await?;
