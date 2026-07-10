@@ -7,6 +7,7 @@ use tower_http::cors::CorsLayer;
 
 mod models;
 mod database;
+mod errors;
 mod handlers;
 mod analyzer;
 mod downloader;
