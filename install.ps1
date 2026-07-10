@@ -10,7 +10,7 @@ if (-not $latestRelease) {
     exit 1
 }
 
-$fileName = "skills_pal-windows-x86_64.zip"
+$fileName = "skills_pal-x86_64-pc-windows-msvc.zip"
 $downloadUrl = "https://github.com/$repo/releases/download/$latestRelease/$fileName"
 
 $tempZip = "$env:TEMP\skills_pal.zip"

@@ -6,8 +6,8 @@ OS="$(uname -s)"
 ARCH="$(uname -m)"
 
 case "${OS}" in
-    Linux*)     PLATFORM="linux";;
-    Darwin*)    PLATFORM="macos";;
+    Linux*)     PLATFORM="x86_64-unknown-linux-gnu";;
+    Darwin*)    PLATFORM="x86_64-apple-darwin";;
     *)          echo "Système d'exploitation non supporté: ${OS}"; exit 1;;
 esac
 
@@ -26,18 +26,22 @@ if [ -z "${LATEST_RELEASE}" ]; then
     exit 1
 fi
 
-echo "🚀 Téléchargement de Skills Pal (${LATEST_RELEASE}) pour ${PLATFORM}..."
+echo "🚀 Téléchargement de Skills Pal (${LATEST_RELEASE}) pour ${OS}..."
 
-FILE_NAME="skills_pal-${PLATFORM}-x86_64.zip"
+FILE_NAME="skills_pal-${PLATFORM}.tar.gz"
 DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_RELEASE}/${FILE_NAME}"
 
-curl -sL "${DOWNLOAD_URL}" -o skills_pal.zip
-unzip -q skills_pal.zip
+curl -sL -f "${DOWNLOAD_URL}" -o skills_pal.tar.gz || {
+    echo "❌ Erreur de téléchargement du binaire."
+    exit 1
+}
+
+tar -xzf skills_pal.tar.gz
 
 chmod +x skills_pal
 sudo mv skills_pal /usr/local/bin/
 
-rm skills_pal.zip
+rm skills_pal.tar.gz
 
 echo "✅ Skills Pal a été installé avec succès !"
 echo "👉 Lance la commande 'skills_pal init' pour commencer."
