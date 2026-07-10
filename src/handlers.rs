@@ -22,3 +22,8 @@ pub async fn save_api_key() -> impl IntoResponse
 {
     StatusCode::OK
 }
+
+pub async fn analyze_project() -> impl IntoResponse
+{
+    StatusCode::ACCEPTED
+}
