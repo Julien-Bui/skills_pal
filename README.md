@@ -1,61 +1,122 @@
-# Skills Pal
+<div align="center">
+  <h1>🧠 Skills Pal</h1>
+  <p><strong>L'assistant IA ultime pour éradiquer la dette technique et recommander des plugins de productivité.</strong></p>
+  
+  [![Rust](https://img.shields.io/badge/Rust-1.88.0-orange.svg)](https://www.rust-lang.org)
+  [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+  [![Railway](https://img.shields.io/badge/Railway-Deployed-purple.svg)](https://railway.app)
+</div>
 
-Skills Pal is a lightweight, AI-powered CLI tool designed to help you tackle technical debt. By analyzing your project's structure, it recommends the best open-source plugins and tools tailored to your specific stack. 
+<br />
 
-Instead of getting lost in endless documentation or ecosystem fatigue, let the AI suggest exactly what you need to clean up, format, or optimize your codebase.
+## 🌟 Présentation
 
-## How it works
+**Skills Pal** est un outil innovant divisé en deux parties (Architecture Client/Serveur) :
 
-The project is split into two parts:
-- **The CLI**: A fast Rust binary that runs locally. It scans your project's file extensions and asks an LLM (OpenAI or Mistral) for tailored recommendations.
-- **The Registry (Backend)**: An Axum server running on Railway. It constantly scrapes GitHub for community-made plugins tagged with `skills-pal-plugin` and serves them to the CLI via a low-latency Postgres/RAM cache.
+1. **Un CLI ultra-rapide (Client)** : Scanne ton code source localement, identifie la dette technique ou le manque d'optimisation, et interroge une IA (OpenAI / Mistral) pour te recommander des plugins ou des compétences à adopter.
+2. **Un Serveur distant (Backend)** : Hébergé sur Railway, il scrape automatiquement GitHub toutes les 12h pour découvrir les nouveaux plugins créés par la communauté et met à jour sa base de données PostgreSQL pour te fournir des recommandations toujours à la pointe.
 
-## Installation
+Fini le code monolithique et obsolète. Laisse l'IA te guider vers les meilleurs outils de l'écosystème open-source !
 
-You don't need to install Rust or build from source. You can grab the pre-compiled binary directly.
+---
 
-**Mac / Linux**
+## ✨ Fonctionnalités Principales
+
+- 🤖 **Analyse IA Intelligente** : Fournit des recommandations de plugins basées sur l'analyse sémantique de ton code via LLM.
+- ⚡ **Multi-LLM** : Compatible avec les API OpenAI et Mistral AI.
+- 🌍 **Registre Communautaire Auto-Géré** : Le serveur découvre tout seul les plugins sur GitHub via le tag `skills-pal-plugin`.
+- 🚀 **Performances Natives** : Écrit intégralement en Rust. Consommation mémoire minimale et exécution instantanée.
+- 🛡️ **Sécurisé & Anti-DDoS** : Serveur protégé par un Rate-Limiter (100 req/sec) et sans injections SQL possibles.
+- 📦 **Installation Universelle** : Binaires autonomes disponibles pour Windows, macOS, et Linux sans besoin d'installer Rust.
+
+---
+
+## 🚀 Installation Universelle (La plus simple)
+
+Notre script d'installation magique télécharge le binaire compilé pour ton système. Aucun prérequis (ni Rust, ni Node, ni Python) n'est nécessaire !
+
+**Sur Mac / Linux :**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Julien-Bui/skills_pal/main/install.sh | bash
 ```
 
-**Windows (PowerShell)**
+**Sur Windows (PowerShell) :**
 ```powershell
 iwr https://raw.githubusercontent.com/Julien-Bui/skills_pal/main/install.ps1 -useb | iex
 ```
 
-## Usage
+Une fois installé, tu peux lancer la configuration initiale n'importe où :
+```bash
+skills_pal init
+```
 
-1. **Initialize the config** in any of your projects:
-   ```bash
-   skills_pal init
-   ```
-   *(This creates a local `.skillspal.toml` where you can set your API key).*
+---
 
-2. **Get recommendations**:
-   ```bash
-   skills_pal recom
-   ```
-   The CLI will analyze your current directory, contact the registry for available plugins, and ask the AI for the best matches.
+## 🛠️ Utilisation du CLI
 
-3. **Check your current setup**:
-   ```bash
-   skills_pal scan
-   ```
+Le CLI est conçu pour être simple et direct. Voici les commandes principales :
 
-## Creating a Plugin for the Community
+### 1. Initialisation
+Crée le fichier de configuration `.skillspal.toml` à la racine de ton projet.
+```bash
+skills_pal init
+```
+*N'oublie pas d'y renseigner ta clé API (OpenAI ou Mistral) et l'URL de ton serveur Railway (`registry_url`).*
 
-Have you built a script, a linter, or a CLI tool that you want Skills Pal to recommend to others?
+### 2. Analyse et Recommandation
+L'outil va lire ton code, l'envoyer à l'IA avec le contexte des plugins communautaires disponibles, et te suggérer les meilleures solutions.
+```bash
+skills_pal recom
+```
 
-Simply add the `skills-pal-plugin` topic to your public GitHub repository. Our backend scraper runs every 12 hours, picks up new repositories with this tag, and automatically adds them to the global registry so the AI can start suggesting your tool to developers who need it.
+### 3. Scan des Plugins Existants
+Permet de voir quels plugins de la communauté tu as déjà intégrés ou configurés.
+```bash
+skills_pal scan
+```
 
-## Architecture
+---
 
-- Written entirely in **Rust** for zero-overhead performance.
-- Global DoS protection on the API registry (`tower::limit`).
-- 100% immune to SQL injections thanks to `sqlx` parameter binding.
-- Privacy-first: Your code stays local, only the project stack context is sent to the LLM.
+## 🌍 Architecture & Déploiement (Pour les contributeurs)
 
-## Contributing
+Ce dépôt contient deux binaires distincts :
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+- **Le Client CLI** (`skills_pal`) : `src/main.rs`
+- **Le Serveur API** (`server`) : `src/server/main.rs`
+
+### Déployer son propre Serveur (Railway)
+
+Si tu souhaites héberger ta propre instance du registre de plugins :
+1. Connecte ton compte Railway à ton fork de ce dépôt GitHub.
+2. Provisionne une base de données **PostgreSQL**.
+3. Dans les variables d'environnement de ton service web, ajoute : `DATABASE_URL=postgresql://...`
+4. Dans **Settings > Deploy** de Railway :
+   - **Custom Build Command** : `cargo build --release --bin server && cp target/release/server ./server`
+   - **Custom Start Command** : `./server`
+
+Le serveur construira automatiquement les tables SQL, lancera son cache en RAM (0 latence), et commencera à scraper GitHub en arrière-plan.
+
+---
+
+## 🧩 Créer un Plugin pour Skills Pal
+
+Tu as développé un outil ou un script génial et tu veux que Skills Pal le recommande aux autres développeurs ?
+Rien de plus simple :
+
+1. Crée un dépôt public sur GitHub.
+2. Ajoute le topic (tag) **`skills-pal-plugin`** dans la description de ton dépôt (bouton ⚙️ en haut à droite).
+3. Le serveur backend de Skills Pal scannera GitHub et l'ajoutera automatiquement à son registre public sous 12h !
+
+---
+
+## 🔒 Sécurité & Confidentialité
+
+- **Audit complet validé** : Protection intégrale contre les injections SQL (via Parameter Binding).
+- **Rate-Limiting Global** : Le serveur utilise `tower::limit::GlobalConcurrencyLimitLayer` pour prévenir les attaques DDoS et la saturation de la DB.
+- **Transparence** : Ton code source n'est envoyé qu'à l'API LLM de ton choix (OpenAI/Mistral) sans intermédiaire obscur. Les clés API sont stockées uniquement en local (`.skillspal.toml` est `.gitignore`).
+
+---
+
+<div align="center">
+  <i>Construit avec passion, Rust, et beaucoup de café ☕</i>
+</div>
