@@ -1,36 +1,44 @@
-
-
-use axum::{routing::{get, post, delete}, Router};
-use std::net::SocketAddr;
-use tower_http::services::ServeDir;
-use tower_http::cors::CorsLayer;
-
+mod cli;
+mod ai;
 mod config;
 mod models;
-mod dtos;
 mod database;
-mod errors;
-mod handlers;
 mod analyzer;
 mod downloader;
 
+use clap::Parser;
+
 #[tokio::main]
-async fn main() 
-{
-    println!("Démarrage de Skills Pal...");
+async fn main() {
+    let args = cli::Cli::parse();
 
-    // Configuration de l'API (Surface level)
-    let app = Router::new()
-        .route("/api/skills", get(handlers::get_skills).post(handlers::add_skill))
-        .route("/api/skills/:id", delete(handlers::delete_skill))
-        .route("/api/settings/keys", post(handlers::save_api_key))
-        .route("/api/analyze", post(handlers::analyze_project))
-        .fallback_service(ServeDir::new("static")) // Sert le dossier frontend
-        .layer(CorsLayer::permissive()); // Permet à l'IDE et au navigateur d'appeler l'API
+    // Initialisation silencieuse de la BDD si elle n'existe pas
+    let _ = database::init_db(config::DB_PATH);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    println!("Serveur API en écoute sur http://{}", addr);
-
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    match args.command {
+        cli::Commands::Init => {
+            if let Err(e) = config::init_config() {
+                eprintln!("Erreur lors de l'initialisation: {}", e);
+            }
+        },
+        cli::Commands::Recom => {
+            if let Err(e) = ai::run_recommendation().await {
+                eprintln!("Erreur lors de la recommandation: {}", e);
+            }
+        },
+        cli::Commands::Scan => {
+            let current_dir = std::env::current_dir().unwrap().display().to_string();
+            println!("Lancement du scan sur {}...", current_dir);
+            match analyzer::scan_project(current_dir).await {
+                Ok(reports) => {
+                    for r in reports {
+                        let path = r.file_path;
+                        let line = r.line_number.map(|l| l.to_string()).unwrap_or_default();
+                        println!("[{}] {}:{} -> {}", r.severity.to_uppercase(), path, line, r.message);
+                    }
+                },
+                Err(e) => eprintln!("Erreur lors de l'analyse: {}", e),
+            }
+        }
+    }
 }
