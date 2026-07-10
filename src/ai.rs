@@ -38,24 +38,29 @@ pub async fn run_recommendation() -> Result<(), String> {
         }
     }
 
-    println!("Analyse du contexte du projet local...");
+    println!("Analyse dynamique du projet (Agonostique au langage)...");
     
-    // Détection basique du contexte (fichiers existants)
-    let mut context = Vec::new();
-    if fs::metadata("Cargo.toml").is_ok() {
-        context.push("Rust (Cargo)");
-    }
-    if fs::metadata("package.json").is_ok() {
-        context.push("Node.js (NPM)");
-    }
-    if fs::metadata("requirements.txt").is_ok() {
-        context.push("Python");
+    let mut extensions = std::collections::HashMap::new();
+    
+    // On scanne les 200 premiers fichiers pertinents pour deviner le langage
+    for entry in walkdir::WalkDir::new(".").into_iter().filter_map(|e| e.ok()) {
+        if let Some(ext) = entry.path().extension().and_then(|s| s.to_str()) {
+            // Ignorer les extensions inutiles
+            if !["git", "json", "md", "txt", "lock", "toml", "yml", "yaml", "png", "svg", "jpg"].contains(&ext) {
+                *extensions.entry(ext.to_string()).or_insert(0) += 1;
+            }
+        }
     }
 
-    let stack = if context.is_empty() {
-        "Stack inconnue".to_string()
+    let mut sorted_exts: Vec<_> = extensions.into_iter().collect();
+    sorted_exts.sort_by(|a, b| b.1.cmp(&a.1)); // Trier par fréquence d'apparition
+
+    let top_extensions: Vec<String> = sorted_exts.into_iter().take(5).map(|(ext, count)| format!(".{} ({})", ext, count)).collect();
+
+    let stack = if top_extensions.is_empty() {
+        "Projet vide ou langages non identifiés".to_string()
     } else {
-        context.join(", ")
+        format!("Extensions principales détectées : {}", top_extensions.join(", "))
     };
 
     println!("Stack détectée : {}", stack);
