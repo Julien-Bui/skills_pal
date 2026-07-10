@@ -12,15 +12,10 @@ pub struct Skill {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Report {
     pub id: Option<i64>,
-    pub timestamp: String,
-    pub grade: String,
-    pub total_issues: i32,
-    pub score_details: serde_json::Value,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ApiKey {
-    pub id: Option<i64>,
-    pub service_name: String,
-    pub key_value: String,
+    pub skill_id: i64,
+    pub file_path: String,
+    pub line_number: Option<i32>,
+    pub message: String,
+    pub severity: String,
+    pub details: serde_json::Value,
 }
