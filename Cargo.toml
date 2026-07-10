@@ -30,5 +30,6 @@ walkdir = "2.5"
 
 # Server specific dependencies
 axum = "0.7"
+tower = { version = "0.4", features = ["limit"] }
 sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
 chrono = "0.4"
