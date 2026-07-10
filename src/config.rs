@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 pub const DB_PATH: &str = "skills_pal.db";
 pub const PLUGINS_DIR: &str = "plugins/";
-const CONFIG_FILE: &str = ".skillspal.toml";
+pub const CONFIG_FILE: &str = ".skillspal.toml";
 
 #[derive(Serialize, Deserialize, Default, Clone)]
 pub struct SkillsPalConfig {

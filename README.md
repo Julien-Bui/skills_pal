@@ -80,6 +80,13 @@ Télécharge et installe automatiquement la dernière version de Skills Pal depu
 ```bash
 skills_pal update
 ```
+*(Note : Si tu as installé l'outil globalement via le script d'installation, tu auras besoin des droits administrateur pour le mettre à jour : `sudo skills_pal update`)*
+
+### 5. Nettoyage Complet (Reset)
+Supprime tous les fichiers générés localement par l'outil (la base de données locale, le dossier des plugins téléchargés, et le fichier de configuration). Idéal pour repartir à zéro.
+```bash
+skills_pal clean
+```
 
 ---
 

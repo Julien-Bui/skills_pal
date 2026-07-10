@@ -64,11 +64,56 @@ async fn main() {
                                 println!("✨ Tu as déjà la dernière version ({}) !", status.version());
                             }
                         },
-                        Err(e) => eprintln!("❌ Erreur lors de la mise à jour: {}", e),
+                        Err(e) => {
+                            let err_msg = e.to_string();
+                            if err_msg.contains("Permission denied") || err_msg.contains("os error 13") {
+                                eprintln!("❌ Erreur : Permission refusée.");
+                                eprintln!("👉 L'outil est installé dans un dossier système. Relance la commande avec les droits administrateur :");
+                                eprintln!("   sudo skills_pal update");
+                            } else {
+                                eprintln!("❌ Erreur lors de la mise à jour: {}", e);
+                            }
+                        }
                     }
                 },
                 Err(e) => eprintln!("❌ Erreur de configuration de la mise à jour: {}", e),
             }
-        }
+        },
+        cli::Commands::Clean => {
+            let files_to_clean = vec![
+                config::PLUGINS_DIR,
+                config::DB_PATH,
+                config::CONFIG_FILE,
+            ];
+            
+            let mut cleaned_something = false;
+            
+            for path_str in files_to_clean {
+                let path = std::path::Path::new(path_str);
+                if path.exists() {
+                    if path.is_dir() {
+                        if let Err(e) = std::fs::remove_dir_all(path) {
+                            eprintln!("❌ Erreur lors de la suppression de '{}' : {}", path_str, e);
+                        } else {
+                            println!("🧹 Dossier '{}' supprimé.", path_str);
+                            cleaned_something = true;
+                        }
+                    } else {
+                        if let Err(e) = std::fs::remove_file(path) {
+                            eprintln!("❌ Erreur lors de la suppression de '{}' : {}", path_str, e);
+                        } else {
+                            println!("🧹 Fichier '{}' supprimé.", path_str);
+                            cleaned_something = true;
+                        }
+                    }
+                }
+            }
+            
+            if !cleaned_something {
+                println!("✨ Rien à nettoyer, aucun fichier généré n'a été trouvé.");
+            } else {
+                println!("✅ Nettoyage complet terminé !");
+            }
+        },
     }
 }

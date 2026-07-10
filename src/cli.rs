@@ -18,4 +18,6 @@ pub enum Commands {
     Scan,
     /// Met à jour l'outil vers la dernière version disponible sur Github
     Update,
+    /// Nettoie les dossiers générés par l'outil (ex: dossier plugins)
+    Clean,
 }
