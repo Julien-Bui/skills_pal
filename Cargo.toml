@@ -16,3 +16,6 @@ rusqlite = { version = "0.31", features = ["bundled"] }
 # Pour formater et comprendre le JSON (échange de données avec le localhost)
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+# Pour servir les fichiers HTML/JS/CSS et gérer la sécurité (CORS)
+tower-http = { version = "0.5", features = ["fs", "cors"] }
