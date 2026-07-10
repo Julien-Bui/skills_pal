@@ -5,15 +5,10 @@ use crate::AppState;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-struct GithubSearchResponse {
-    items: Vec<GithubRepo>,
-}
-
-#[derive(Deserialize)]
-struct GithubRepo {
+struct GithubContentItem {
     name: String,
-    description: Option<String>,
-    html_url: String,
+    #[serde(rename = "type")]
+    item_type: String,
 }
 
 pub fn start_background_scraper(state: Arc<AppState>) {
@@ -36,22 +31,35 @@ pub fn start_background_scraper(state: Arc<AppState>) {
 }
 
 async fn scrape_github(client: &Client, state: &Arc<AppState>) -> Result<(), Box<dyn std::error::Error>> {
-    let query = "topic:skills-pal-plugin";
-    let url = format!("https://api.github.com/search/repositories?q={}", query);
+    let url = "https://api.github.com/repos/Julien-Bui/skills-registry/contents/skills";
     
-    let res = client.get(&url).send().await?;
+    let res = client.get(url).send().await?;
     if !res.status().is_success() {
-        eprintln!("Github a retourné une erreur: {}", res.status());
+        eprintln!("Github a retourné une erreur lors de la lecture du dossier: {}", res.status());
         return Ok(());
     }
 
-    let search_res: GithubSearchResponse = res.json().await?;
+    let items: Vec<GithubContentItem> = res.json().await?;
     
-    for repo in search_res.items {
-        let desc = repo.description.unwrap_or_else(|| "Aucune description".to_string());
-        println!("Nouveau skill détecté : {} ({})", repo.name, repo.html_url);
-        
-        crate::db::insert_skill(&state.db, &repo.name, &desc, &repo.html_url).await?;
+    for item in items {
+        if item.item_type == "dir" {
+            let skill_name = item.name.clone();
+            let raw_url = format!("https://raw.githubusercontent.com/Julien-Bui/skills-registry/main/skills/{}/SKILL.md", skill_name);
+            
+            match client.get(&raw_url).send().await {
+                Ok(raw_res) => {
+                    if raw_res.status().is_success() {
+                        let content = raw_res.text().await.unwrap_or_default();
+                        if let Some((name, desc)) = parse_skill_frontmatter(&content) {
+                            let github_url = format!("https://github.com/Julien-Bui/skills-registry/tree/main/skills/{}", skill_name);
+                            println!("Nouveau skill détecté : {} ({})", name, github_url);
+                            let _ = crate::db::insert_skill(&state.db, &name, &desc, &github_url).await;
+                        }
+                    }
+                },
+                Err(e) => eprintln!("Erreur lors du téléchargement de {} : {}", skill_name, e),
+            }
+        }
     }
 
     // Mettre à jour le cache en mémoire après le scraping
@@ -63,4 +71,34 @@ async fn scrape_github(client: &Client, state: &Arc<AppState>) -> Result<(), Box
 
     println!("Scraping Github terminé !");
     Ok(())
+}
+
+fn parse_skill_frontmatter(content: &str) -> Option<(String, String)> {
+    if !content.starts_with("---") {
+        return None;
+    }
+    
+    let parts: Vec<&str> = content.split("---").collect();
+    if parts.len() < 3 {
+        return None;
+    }
+    
+    let frontmatter = parts[1];
+    let mut name = String::new();
+    let mut desc = String::new();
+    
+    for line in frontmatter.lines() {
+        let line = line.trim();
+        if line.starts_with("name:") {
+            name = line.trim_start_matches("name:").trim().to_string();
+        } else if line.starts_with("description:") {
+            desc = line.trim_start_matches("description:").trim().to_string();
+        }
+    }
+    
+    if !name.is_empty() && !desc.is_empty() {
+        Some((name, desc))
+    } else {
+        None
+    }
 }
