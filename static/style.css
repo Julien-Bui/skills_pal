@@ -27,7 +27,6 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Sidebar - Linear/Vercel style */
 aside {
     width: 260px;
     background: var(--bg-surface);
@@ -89,7 +88,6 @@ nav {
     border: 1px solid var(--border-color);
 }
 
-/* Main Content */
 main {
     flex: 1;
     display: flex;
@@ -153,7 +151,6 @@ header {
     align-items: start;
 }
 
-/* Technical Debt Widget */
 .widget {
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -209,7 +206,6 @@ header {
     color: var(--text-primary);
 }
 
-/* Skills Table */
 .skills-list {
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -242,7 +238,7 @@ header {
     font-size: 13px;
 }
 
-/* Minimal Toggle */
+
 .toggle {
     position: relative;
     display: inline-block;
@@ -259,7 +255,10 @@ header {
 .slider {
     position: absolute;
     cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: var(--border-color);
     transition: .2s;
     border-radius: 20px;
@@ -278,12 +277,12 @@ header {
     border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: var(--text-primary);
     border-color: var(--text-primary);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(16px);
     background-color: var(--bg-base);
 }

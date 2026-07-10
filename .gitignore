@@ -1,7 +1,20 @@
+# Rust
+/target/
+Cargo.lock
 
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
-# Added by cargo
+# Environment variables
+.env
 
-/target
+# Skills Pal specific
+/plugins/
+/skills/
 
-skills/
+# OS / Editor
+.DS_Store
+.vscode/
+.idea/
