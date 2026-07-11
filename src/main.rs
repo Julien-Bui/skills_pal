@@ -8,6 +8,7 @@ mod downloader;
 mod browse;
 mod doctor;
 mod hooks;
+mod utils;
 
 use clap::Parser;
 use colored::Colorize;
