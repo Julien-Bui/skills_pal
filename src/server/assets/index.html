@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills Pal — Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e8;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #12121a 0%, #1a1a2e 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo { font-size: 1.8rem; }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header h1 span {
+            font-weight: 400;
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge {
+            background: rgba(167, 139, 250, 0.15);
+            color: #a78bfa;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+
+        /* Search */
+        .search-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            background: #16161f;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #e0e0e8;
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-bar:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            opacity: 0.4;
+        }
+
+        /* Stats */
+        .stats {
+            max-width: 1200px;
+            margin: 0 auto 1.5rem;
+            padding: 0 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #16161f 0%, #1a1a28 100%);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Grid */
+        .grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 3rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(145deg, #14141e 0%, #18182a 100%);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 1.4rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #a78bfa, #818cf8, #6366f1);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .card:hover {
+            border-color: rgba(129, 140, 248, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.1);
+        }
+
+        .card:hover::before { opacity: 1; }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(99, 102, 241, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .card-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #f0f0f8;
+        }
+
+        .card-desc {
+            font-size: 0.88rem;
+            color: #8b8fa8;
+            line-height: 1.55;
+            margin-bottom: 1rem;
+        }
+
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #818cf8;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .card-link:hover { color: #a78bfa; }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: #64748b;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(129, 140, 248, 0.2);
+            border-top-color: #818cf8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #64748b;
+        }
+
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #3a3a5c;
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .footer a {
+            color: #818cf8;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header { padding: 1rem; }
+            .grid { grid-template-columns: 1fr; }
+            .search-container, .stats, .grid { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <span class="logo">🧠</span>
+            <h1>Skills Pal <span>Dashboard</span></h1>
+        </div>
+        <span class="badge" id="version-badge">v1.0</span>
+    </div>
+
+    <div class="search-container">
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-bar" id="search" placeholder="Rechercher un skill..." autocomplete="off">
+        </div>
+    </div>
+
+    <div class="stats" id="stats">
+        <div class="stat-card">
+            <div class="label">Skills disponibles</div>
+            <div class="value" id="total-count">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Résultats affichés</div>
+            <div class="value" id="shown-count">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Statut serveur</div>
+            <div class="value" style="font-size: 1rem; padding-top: 0.3rem;" id="server-status">⏳ Chargement...</div>
+        </div>
+    </div>
+
+    <div class="grid" id="grid">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Chargement des skills depuis la base de données...</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        Propulsé par <a href="https://github.com/Julien-Bui/skills_pal" target="_blank">Skills Pal</a> — Rust + Axum + PostgreSQL
+    </div>
+
+    <script>
+        const ICONS = ['🔧', '⚡', '🛡️', '📊', '🎯', '🚀', '💡', '🔬', '🧩', '📦', '🌐', '🔌'];
+        let allSkills = [];
+
+        async function loadSkills() {
+            try {
+                const res = await fetch('/api/skills');
+                allSkills = await res.json();
+
+                document.getElementById('total-count').textContent = allSkills.length;
+                document.getElementById('server-status').textContent = '🟢 En ligne';
+                document.getElementById('server-status').style.color = '#4ade80';
+
+                renderSkills(allSkills);
+            } catch (e) {
+                document.getElementById('grid').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">❌</div>
+                        <p>Impossible de charger les skills. Le serveur est peut-être hors ligne.</p>
+                    </div>`;
+                document.getElementById('server-status').textContent = '🔴 Hors ligne';
+                document.getElementById('server-status').style.color = '#f87171';
+            }
+        }
+
+        function renderSkills(skills) {
+            const grid = document.getElementById('grid');
+            document.getElementById('shown-count').textContent = skills.length;
+
+            if (skills.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🔍</div>
+                        <p>Aucun skill trouvé pour cette recherche.</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = skills.map((s, i) => `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">${ICONS[i % ICONS.length]}</div>
+                        <span class="card-name">${escapeHtml(s.name)}</span>
+                    </div>
+                    <p class="card-desc">${escapeHtml(s.description)}</p>
+                    <a class="card-link" href="${escapeHtml(s.github_url)}" target="_blank" rel="noopener">
+                        Voir sur GitHub →
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        document.getElementById('search').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = allSkills.filter(s =>
+                s.name.toLowerCase().includes(q) ||
+                s.description.toLowerCase().includes(q)
+            );
+            renderSkills(filtered);
+        });
+
+        loadSkills();
+    </script>
+</body>
+</html>
