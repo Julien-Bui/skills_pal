@@ -91,8 +91,10 @@ Bloque les commits qui contiennent de la dette technique ou des erreurs critique
 # Installer le hook (s'exécutera avant chaque git commit)
 skills_pal hook install
 
-# Le retirer
+# Le retirer (désactiver le blocage)
 skills_pal hook uninstall
+# Alias disponible :
+skills_pal hook disable
 ```
 
 ### 6. Diagnostic (Doctor)
@@ -123,12 +125,14 @@ Ce dépôt contient deux binaires distincts :
 - **Le Client CLI** (`skills_pal`) : `src/main.rs`
 - **Le Serveur API** (`server`) : `src/server/main.rs`
 
+*(Pour tous les détails sur la structure du code, la sécurité (Path Traversal), le Graceful Shutdown et l'intégration continue, consulte notre documentation dédiée : [ARCHITECTURE.md](ARCHITECTURE.md))*
+
 ### Déployer son propre Serveur (Railway)
 
 Si tu souhaites héberger ta propre instance du registre de plugins :
 1. Connecte ton compte Railway à ton fork de ce dépôt GitHub.
 2. Provisionne une base de données **PostgreSQL**.
-3. Dans les variables d'environnement de ton service web, ajoute : `DATABASE_URL=postgresql://...`
+3. Dans les variables d'environnement de ton service web, ajoute : `DATABASE_URL=postgresql://...` (pour la BDD) et un `GITHUB_TOKEN=ghp_...` (pour permettre au scraper de contourner les limites de requêtes de GitHub).
 4. Dans **Settings > Deploy** de Railway :
    - **Custom Build Command** : `cargo build --release --bin server && cp target/release/server ./server`
    - **Custom Start Command** : `./server`

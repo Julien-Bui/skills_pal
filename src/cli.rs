@@ -62,4 +62,6 @@ pub enum HookAction {
     Install,
     /// Supprime le hook pre-commit installé par Skills Pal
     Uninstall,
+    /// Désactive (supprime) le hook pre-commit (alias de uninstall)
+    Disable,
 }

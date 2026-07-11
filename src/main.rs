@@ -147,7 +147,7 @@ async fn main() {
         cli::Commands::Hook { action } => {
             let result = match action {
                 cli::HookAction::Install => hooks::install_hook(),
-                cli::HookAction::Uninstall => hooks::uninstall_hook(),
+                cli::HookAction::Uninstall | cli::HookAction::Disable => hooks::uninstall_hook(),
             };
             if let Err(e) = result {
                 eprintln!("{}", e);
