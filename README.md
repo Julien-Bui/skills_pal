@@ -125,7 +125,6 @@ Ce dépôt contient deux binaires distincts :
 - **Le Client CLI** (`skills_pal`) : `src/main.rs`
 - **Le Serveur API** (`server`) : `src/server/main.rs`
 
-*(Pour tous les détails sur la structure du code, la sécurité (Path Traversal), le Graceful Shutdown et l'intégration continue, consulte notre documentation dédiée : [ARCHITECTURE.md](ARCHITECTURE.md))*
 
 ### Déployer son propre Serveur (Railway)
 
