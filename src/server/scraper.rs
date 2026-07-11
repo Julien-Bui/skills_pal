@@ -14,6 +14,9 @@ struct GithubContentItem {
 pub fn start_background_scraper(state: Arc<AppState>) {
     tokio::spawn(async move {
         println!("Background scraper lancé ! Il tournera toutes les 12 heures.");
+        // Délai de grâce initial de 60s pour éviter le spam API GitHub en cas de crash loop
+        sleep(Duration::from_secs(60)).await;
+        
         let client = Client::builder()
             .user_agent("Skills-Pal-Scraper/1.0")
             .build()
@@ -31,34 +34,43 @@ pub fn start_background_scraper(state: Arc<AppState>) {
 }
 
 async fn scrape_github(client: &Client, state: &Arc<AppState>) -> Result<(), Box<dyn std::error::Error>> {
-    let url = "https://api.github.com/repos/Julien-Bui/skills-registry/contents/skills";
+    let mut url = "https://api.github.com/repos/Julien-Bui/skills-registry/contents/skills".to_string();
     
-    let res = client.get(url).send().await?;
-    if !res.status().is_success() {
-        eprintln!("Github a retourné une erreur lors de la lecture du dossier: {}", res.status());
-        return Ok(());
-    }
+    loop {
+        let res = client.get(&url).send().await?;
+        if !res.status().is_success() {
+            eprintln!("Github a retourné une erreur lors de la lecture du dossier: {}", res.status());
+            break;
+        }
 
-    let items: Vec<GithubContentItem> = res.json().await?;
-    
-    for item in items {
-        if item.item_type == "dir" {
-            let skill_name = item.name.clone();
-            let raw_url = format!("https://raw.githubusercontent.com/Julien-Bui/skills-registry/main/skills/{}/SKILL.md", skill_name);
-            
-            match client.get(&raw_url).send().await {
-                Ok(raw_res) => {
-                    if raw_res.status().is_success() {
-                        let content = raw_res.text().await.unwrap_or_default();
-                        if let Some((name, desc)) = parse_skill_frontmatter(&content) {
-                            let github_url = format!("https://github.com/Julien-Bui/skills-registry/tree/main/skills/{}", skill_name);
-                            println!("Nouveau skill détecté : {} ({})", name, github_url);
-                            let _ = crate::db::insert_skill(&state.db, &name, &desc, &github_url).await;
+        let next_url = get_next_link(res.headers());
+        let items: Vec<GithubContentItem> = res.json().await?;
+        
+        for item in items {
+            if item.item_type == "dir" {
+                let skill_name = item.name.clone();
+                let raw_url = format!("https://raw.githubusercontent.com/Julien-Bui/skills-registry/main/skills/{}/SKILL.md", skill_name);
+                
+                match client.get(&raw_url).send().await {
+                    Ok(raw_res) => {
+                        if raw_res.status().is_success() {
+                            let content = raw_res.text().await.unwrap_or_default();
+                            if let Some((name, desc)) = parse_skill_frontmatter(&content) {
+                                let github_url = format!("https://github.com/Julien-Bui/skills-registry/tree/main/skills/{}", skill_name);
+                                println!("Nouveau skill détecté : {} ({})", name, github_url);
+                                let _ = crate::db::insert_skill(&state.db, &name, &desc, &github_url).await;
+                            }
                         }
-                    }
-                },
-                Err(e) => eprintln!("Erreur lors du téléchargement de {} : {}", skill_name, e),
+                    },
+                    Err(e) => eprintln!("Erreur lors du téléchargement de {} : {}", skill_name, e),
+                }
             }
+        }
+
+        if let Some(next) = next_url {
+            url = next;
+        } else {
+            break;
         }
     }
 
@@ -90,9 +102,13 @@ fn parse_skill_frontmatter(content: &str) -> Option<(String, String)> {
     for line in frontmatter.lines() {
         let line = line.trim();
         if line.starts_with("name:") {
-            name = line.trim_start_matches("name:").trim().to_string();
+            name = line.trim_start_matches("name:").trim()
+                       .trim_matches(|c| c == '"' || c == '\'')
+                       .to_string();
         } else if line.starts_with("description:") {
-            desc = line.trim_start_matches("description:").trim().to_string();
+            desc = line.trim_start_matches("description:").trim()
+                       .trim_matches(|c| c == '"' || c == '\'')
+                       .to_string();
         }
     }
     
@@ -101,4 +117,21 @@ fn parse_skill_frontmatter(content: &str) -> Option<(String, String)> {
     } else {
         None
     }
+}
+
+fn get_next_link(headers: &reqwest::header::HeaderMap) -> Option<String> {
+    if let Some(link_header) = headers.get(reqwest::header::LINK) {
+        if let Ok(link_str) = link_header.to_str() {
+            for link in link_str.split(',') {
+                if link.contains("rel=\"next\"") {
+                    if let Some(start) = link.find('<') {
+                        if let Some(end) = link.find('>') {
+                            return Some(link[start + 1..end].to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    None
 }
