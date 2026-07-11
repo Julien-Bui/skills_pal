@@ -5,6 +5,9 @@ mod models;
 mod database;
 mod analyzer;
 mod downloader;
+mod browse;
+mod doctor;
+mod hooks;
 
 use clap::Parser;
 use colored::Colorize;
@@ -128,6 +131,25 @@ async fn main() {
                 println!("{} Rien à nettoyer, aucun fichier généré n'a été trouvé.", "✨".to_string());
             } else {
                 println!("\n{} {}", "✅".green(), "Nettoyage complet terminé !".green().bold());
+            }
+        },
+        cli::Commands::Browse => {
+            if let Err(e) = browse::run_browse().await {
+                eprintln!("{}", e);
+            }
+        },
+        cli::Commands::Doctor => {
+            if let Err(e) = doctor::run_doctor().await {
+                eprintln!("{}", e);
+            }
+        },
+        cli::Commands::Hook { action } => {
+            let result = match action {
+                cli::HookAction::Install => hooks::install_hook(),
+                cli::HookAction::Uninstall => hooks::uninstall_hook(),
+            };
+            if let Err(e) = result {
+                eprintln!("{}", e);
             }
         },
     }
