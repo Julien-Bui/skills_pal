@@ -1,6 +1,6 @@
 [package]
 name = "skills_pal"
-version = "1.0.6"
+version = "1.0.7"
 edition = "2021"
 description = "Un outil CLI propulsé par l'IA pour analyser la dette technique et recommander des plugins de productivité."
 license = "MIT"
