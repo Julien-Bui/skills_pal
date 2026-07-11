@@ -45,4 +45,21 @@ pub enum Commands {
     Update,
     /// Supprime tous les fichiers générés par l'outil (config, db, plugins)
     Clean,
+    /// Parcourir les skills disponibles dans un menu interactif
+    Browse,
+    /// Vérifie la configuration et la connectivité de l'outil
+    Doctor,
+    /// Gérer le hook Git pre-commit
+    Hook {
+        #[command(subcommand)]
+        action: HookAction,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum HookAction {
+    /// Installe le hook pre-commit dans le dépôt Git courant
+    Install,
+    /// Supprime le hook pre-commit installé par Skills Pal
+    Uninstall,
 }
