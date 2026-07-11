@@ -1,5 +1,6 @@
 mod db;
 mod scraper;
+mod dashboard;
 
 use axum::{routing::get, Router, Json};
 use serde::Serialize;
@@ -40,6 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     scraper::start_background_scraper(state.clone());
 
     let app = Router::new()
+        .route("/", get(dashboard::serve_dashboard))
         .route("/api/skills", get(get_skills))
         .layer(tower::limit::GlobalConcurrencyLimitLayer::new(100))
         .with_state(state);
