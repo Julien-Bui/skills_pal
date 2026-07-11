@@ -28,6 +28,9 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
 zip = "2.1"
 walkdir = "2.5"
 self_update = { version = "0.41", features = ["archive-tar", "archive-zip", "compression-zip-deflate", "compression-flate2", "rustls"] }
+colored = "2"
+indicatif = "0.17"
+directories = "5"
 
 # Server specific dependencies
 axum = "0.7"
