@@ -16,7 +16,9 @@ pub async fn run_doctor() -> Result<(), String> {
 
     // 2. Fichier de configuration
     print!("  ");
-    match config::get_config() {
+    let mut default_registry = "https://skillspal-production-0511.up.railway.app".to_string();
+    let config_res = config::get_config();
+    match &config_res {
         Ok(conf) => {
             println!("{} Fichier de configuration trouvé", "✔".green());
             ok_count += 1;
@@ -50,6 +52,7 @@ pub async fn run_doctor() -> Result<(), String> {
             if let Some(url) = &conf.registry_url {
                 if !url.is_empty() {
                     println!("{} Registry URL : {}", "ℹ".cyan(), url.dimmed());
+                    default_registry = url.clone();
                 } else {
                     println!("{} Registry URL non configurée (utilisation du défaut)", "⚠".yellow());
                     warn_count += 1;
@@ -82,8 +85,8 @@ pub async fn run_doctor() -> Result<(), String> {
         .build()
         .map_err(|e| e.to_string())?;
 
-    let registry_url = "https://skillspal-production-0511.up.railway.app/api/skills";
-    match client.get(registry_url).send().await {
+    let registry_url = format!("{}/api/skills", default_registry.trim_end_matches('/'));
+    match client.get(&registry_url).send().await {
         Ok(res) if res.status().is_success() => {
             if let Ok(skills) = res.json::<Vec<serde_json::Value>>().await {
                 spinner.finish_and_clear();

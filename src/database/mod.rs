@@ -18,19 +18,13 @@ pub fn init_db(db_path: &str) -> Result<DbState> {
         [],
     )?;
 
-    // Insertion de fausses données pour la démonstration finale
-    let count: i32 = conn.query_row("SELECT COUNT(*) FROM installed_skills", [], |row| row.get(0))?;
-    if count == 0 {
-        conn.execute("INSERT INTO installed_skills (name, description, github_url, is_active) VALUES (?1, ?2, ?3, ?4)", params!["Rust Analyzer", "Scans for memory leaks.", "https://github.com/rust-analyzer", 1])?;
-        conn.execute("INSERT INTO installed_skills (name, description, github_url, is_active) VALUES (?1, ?2, ?3, ?4)", params!["Security Scanner", "Detects vulnerabilities.", "https://github.com/sec", 1])?;
-        conn.execute("INSERT INTO installed_skills (name, description, github_url, is_active) VALUES (?1, ?2, ?3, ?4)", params!["Code Linter", "Enforces formatting rules.", "https://github.com/linter", 0])?;
-    }
+    // Pas de fausses données en production
 
     Ok(Arc::new(Mutex::new(conn)))
 }
 
 pub fn get_all_skills(db: &DbState) -> Result<Vec<Skill>> {
-    let conn = db.lock().unwrap();
+    let conn = db.lock().map_err(|_| rusqlite::Error::InvalidQuery)?;
     let mut stmt = conn.prepare("SELECT id, name, description, github_url, is_active FROM installed_skills")?;
     let skill_iter = stmt.query_map([], |row| {
         Ok(Skill {
@@ -49,9 +43,8 @@ pub fn get_all_skills(db: &DbState) -> Result<Vec<Skill>> {
     Ok(skills)
 }
 
-pub fn add_skill() { }
 pub fn delete_skill(db: &DbState, id: i64) -> Result<()> {
-    let conn = db.lock().unwrap();
+    let conn = db.lock().map_err(|_| rusqlite::Error::InvalidQuery)?;
     conn.execute("DELETE FROM installed_skills WHERE id = ?1", params![id])?;
     Ok(())
 }

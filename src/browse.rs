@@ -25,6 +25,7 @@ pub async fn run_browse() -> Result<(), String> {
 
     let client = Client::builder()
         .user_agent("Skills-Pal-CLI/1.0")
+        .timeout(std::time::Duration::from_secs(10))
         .build()
         .map_err(|e| e.to_string())?;
 
