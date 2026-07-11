@@ -22,8 +22,8 @@
 
 - 🤖 **Analyse IA Intelligente** : Recommandations basées sur l'analyse sémantique globale de ton projet.
 - ⚡ **Multi-LLM** : Compatible par défaut avec **Mistral AI**, mais supporte aussi OpenAI, Anthropic, et Ollama (en local).
-- 🎨 **Expérience CLI Premium** : Interface animée avec spinners, sorties colorées, et vérification passive des mises à jour.
-- 🌍 **Registre Communautaire Auto-Géré** : Le serveur découvre tout seul les plugins sur GitHub via ton propre dépôt ou un dépôt communautaire.
+- 🎨 **Expérience CLI Premium** : Interface animée avec spinners, sorties colorées, et menus interactifs (Fuzzy Select).
+- 🌍 **Registre & Dashboard Web** : Le serveur découvre tout seul les plugins sur GitHub et expose un superbe Web Dashboard !
 - 🚀 **Performances Natives** : Écrit intégralement en Rust. Consommation mémoire minimale et exécution instantanée.
 - 🛡️ **Sécurisé & Anti-DDoS** : Serveur protégé par un Rate-Limiter (100 req/sec). Clés API stockées uniquement en local sur ton PC.
 - 📦 **Installation Universelle** : Binaires autonomes disponibles pour Windows, macOS, et Linux sans besoin d'installer Rust.
@@ -79,14 +79,36 @@ skills_pal scan
 skills_pal scan --path ./src/backend
 ```
 
-### 4. Mise à Jour Automatique
+### 4. Menu Interactif (Browse)
+Affiche un menu de sélection flou (Fuzzy Select) dans ton terminal pour naviguer facilement parmi les skills disponibles sur le serveur et ouvrir leurs pages GitHub.
+```bash
+skills_pal browse
+```
+
+### 5. Git Hooks (Automatisation)
+Bloque les commits qui contiennent de la dette technique ou des erreurs critiques !
+```bash
+# Installer le hook (s'exécutera avant chaque git commit)
+skills_pal hook install
+
+# Le retirer
+skills_pal hook uninstall
+```
+
+### 6. Diagnostic (Doctor)
+Vérifie en un clin d'œil que ton outil est parfaitement configuré (Clés API, Connectivité au serveur Railway, Dépôt Git).
+```bash
+skills_pal doctor
+```
+
+### 7. Mise à Jour Automatique
 Télécharge et installe automatiquement la dernière version de Skills Pal depuis Github. *(Le CLI te préviendra automatiquement à la fin d'un scan si une mise à jour est disponible !)*
 ```bash
 skills_pal update
 ```
 *(Note : Si tu as installé l'outil globalement via le script d'installation, tu auras besoin des droits administrateur pour le mettre à jour : `sudo skills_pal update`)*
 
-### 5. Nettoyage Complet (Reset)
+### 8. Nettoyage Complet (Reset)
 Supprime tous les fichiers générés localement par l'outil (base de données locale, dossier des plugins téléchargés, fichiers zip temporaires et fichier de configuration). Idéal pour repartir à zéro.
 ```bash
 skills_pal clean
@@ -111,7 +133,7 @@ Si tu souhaites héberger ta propre instance du registre de plugins :
    - **Custom Build Command** : `cargo build --release --bin server && cp target/release/server ./server`
    - **Custom Start Command** : `./server`
 
-Le serveur construira automatiquement les tables SQL, lancera son cache en RAM (0 latence), et commencera à scraper GitHub en arrière-plan.
+Le serveur construira automatiquement les tables SQL, lancera son cache en RAM (0 latence), commencera à scraper GitHub en arrière-plan, et **servira le Dashboard Web UI** sur l'URL de ton application !
 
 ---
 
