@@ -21,10 +21,10 @@ pub fn init_config() -> Result<(), String> {
     }
 
     let config = SkillsPalConfig {
-        provider: "openai".to_string(),
-        model: "gpt-3.5-turbo".to_string(),
-        api_key: Some("VOTRE_CLE_ICI".to_string()),
-        base_url: Some("".to_string()), 
+        provider: "openai_compatible".to_string(),
+        model: "mistral-large-latest".to_string(),
+        api_key: Some("VOTRE_CLE_MISTRAL_ICI".to_string()),
+        base_url: Some("https://api.mistral.ai/v1/chat/completions".to_string()), 
         registry_url: Some("https://skillspal-production-0511.up.railway.app".to_string()), // Serveur public par défaut
     };
 
