@@ -101,6 +101,10 @@ pub async fn run_browse() -> Result<(), String> {
 }
 
 fn open_url(url: &str) -> Result<(), String> {
+    if !url.starts_with("http://") && !url.starts_with("https://") {
+        return Err("L'URL n'est pas sécurisée (doit commencer par http ou https).".to_string());
+    }
+
     #[cfg(target_os = "linux")]
     {
         std::process::Command::new("xdg-open")
@@ -117,8 +121,8 @@ fn open_url(url: &str) -> Result<(), String> {
     }
     #[cfg(target_os = "windows")]
     {
-        std::process::Command::new("cmd")
-            .args(["/c", "start", url])
+        std::process::Command::new("explorer")
+            .arg(url)
             .spawn()
             .map_err(|e| e.to_string())?;
     }

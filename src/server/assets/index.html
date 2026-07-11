@@ -351,18 +351,24 @@
                 return;
             }
 
-            grid.innerHTML = skills.map((s, i) => `
+            grid.innerHTML = skills.map((s, i) => {
+                const safeUrl = (s.github_url.startsWith('http://') || s.github_url.startsWith('https://')) 
+                    ? escapeHtml(s.github_url) 
+                    : '#';
+                
+                return `
                 <div class="card">
                     <div class="card-header">
                         <div class="card-icon">${ICONS[i % ICONS.length]}</div>
                         <span class="card-name">${escapeHtml(s.name)}</span>
                     </div>
                     <p class="card-desc">${escapeHtml(s.description)}</p>
-                    <a class="card-link" href="${escapeHtml(s.github_url)}" target="_blank" rel="noopener">
+                    <a class="card-link" href="${safeUrl}" target="_blank" rel="noopener">
                         Voir sur GitHub →
                     </a>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function escapeHtml(str) {
