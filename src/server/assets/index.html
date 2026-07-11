@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,7 +93,8 @@
             cursor: pointer;
         }
 
-        .nav-item:hover, .nav-item.active {
+        .nav-item:hover,
+        .nav-item.active {
             background-color: var(--bg-surface);
             color: var(--text-primary);
         }
@@ -270,7 +272,7 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .toolbar-count {
             color: var(--text-secondary);
             font-weight: 400;
@@ -385,7 +387,8 @@
         }
 
         /* Loading & Empty state */
-        .loading, .empty-state {
+        .loading,
+        .empty-state {
             grid-column: 1 / -1;
             text-align: center;
             padding: 4rem;
@@ -394,42 +397,57 @@
 
         /* Responsive */
         @media (max-width: 1024px) {
-            .sidebar { display: none; }
+            .sidebar {
+                display: none;
+            }
         }
 
         @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
-            .topbar { padding: 0 1rem; }
-            .search-container { width: 100%; max-width: 300px; }
-            .hero h1 { font-size: 2.5rem; }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                padding: 0 1rem;
+            }
+
+            .search-container {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <span>📦</span> Skills Pal
+            <span></span> Skills Pal
         </div>
 
         <div class="nav-group">
             <div class="nav-title">Browse</div>
             <a href="#" class="nav-item active">
                 <div class="nav-item-icon">
-                    <span>⚡</span> Skills
+                    <span></span> Skills
                 </div>
                 <span class="badge-count" id="nav-skills-count">0</span>
             </a>
             <a href="#" class="nav-item">
                 <div class="nav-item-icon">
-                    <span>🤖</span> Agents
+                    <span></span> Agents
                 </div>
                 <span class="badge-count">0</span>
             </a>
             <a href="#" class="nav-item">
                 <div class="nav-item-icon">
-                    <span>🔌</span> Plugins
+                    <span></span> Plugins
                 </div>
                 <span class="badge-count">0</span>
             </a>
@@ -439,12 +457,12 @@
             <div class="nav-title">Resources</div>
             <a href="https://github.com/Julien-Bui/skills_pal" target="_blank" class="nav-item">
                 <div class="nav-item-icon">
-                    <span>📚</span> Docs
+                    <span></span> Docs
                 </div>
             </a>
             <a href="https://github.com/Julien-Bui/skills_pal" target="_blank" class="nav-item">
                 <div class="nav-item-icon">
-                    <span>🐙</span> GitHub
+                    <span></span> GitHub
                 </div>
             </a>
         </div>
@@ -452,12 +470,13 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        
+
         <!-- Topbar -->
         <header class="topbar">
             <div class="search-container">
                 <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" id="search" placeholder="Search components..." autocomplete="off">
+                <input type="text" class="search-input" id="search" placeholder="Search components..."
+                    autocomplete="off">
                 <span class="search-shortcut">⌘ K</span>
             </div>
             <div class="topbar-actions">
@@ -470,7 +489,7 @@
         <!-- Scrollable Area -->
         <div class="scrollable-content">
             <div class="content-container">
-                
+
                 <!-- Hero -->
                 <div class="hero">
                     <h1>Skills <span>Registry</span></h1>
@@ -509,6 +528,7 @@
         async function loadSkills() {
             try {
                 const res = await fetch('/api/skills');
+                if (!res.ok) throw new Error("API not available");
                 allSkills = await res.json();
                 
                 const count = allSkills.length;
@@ -518,12 +538,19 @@
 
                 renderSkills(allSkills);
             } catch (e) {
-                document.getElementById('grid').innerHTML = `
-                    <div class="empty-state">
-                        <p>Unable to connect to registry server.</p>
-                    </div>`;
-                document.getElementById('server-status').innerHTML = '● Registry Offline';
-                document.getElementById('server-status').style.color = '#f85149';
+                // Fausse donnée pour pouvoir tester le design sur "Live Server" (VSCode) sans backend
+                allSkills = [
+                    { name: "Frontend Design", description: "Create distinctive, production-grade frontend interfaces with high design intelligence.", github_url: "#" },
+                    { name: "Code Reviewer", description: "Comprehensive code review skill for TypeScript, JavaScript, Python, Swift.", github_url: "#" },
+                    { name: "Senior Backend", description: "Comprehensive backend development skill for building scalable backend architecture.", github_url: "#" },
+                    { name: "UI UX Pro Max", description: "UI/UX design intelligence. 50 styles, 21 palettes, 50 font pairings.", github_url: "#" },
+                    { name: "Senior Architect", description: "Comprehensive software architecture skill for designing scalable, maintainable systems.", github_url: "#" },
+                    { name: "Skill Creator", description: "Create new skills, modify and improve existing skills, and measure skill usage.", github_url: "#" }
+                ];
+                document.getElementById('nav-skills-count').textContent = allSkills.length;
+                document.getElementById('server-status').innerHTML = '● Local Mock Mode (VSCode Live Server)';
+                document.getElementById('server-status').style.color = 'var(--accent-orange)';
+                renderSkills(allSkills);
             }
         }
 
@@ -540,13 +567,13 @@
             }
 
             grid.innerHTML = skills.map((s, i) => {
-                const safeUrl = (s.github_url.startsWith('http://') || s.github_url.startsWith('https://')) 
-                    ? escapeHtml(s.github_url) 
+                const safeUrl = (s.github_url.startsWith('http://') || s.github_url.startsWith('https://'))
+                    ? escapeHtml(s.github_url)
                     : '#';
-                
+
                 // Extract a pseudo-category from the name or default to 'development'
                 const category = 'development';
-                
+
                 return `
                 <a href="${safeUrl}" target="_blank" rel="noopener" class="card">
                     <div class="card-icon-wrapper">
@@ -593,4 +620,5 @@
         loadSkills();
     </script>
 </body>
+
 </html>
