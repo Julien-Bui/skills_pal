@@ -8,7 +8,7 @@ pub async fn init_db(db_url: &str) -> Result<PgPool, sqlx::Error> {
         .await?;
 
     // Create table if not exists
-    sqlx::query(
+    let migration_result = sqlx::query(
         "CREATE TABLE IF NOT EXISTS remote_skills (
             id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
@@ -19,26 +19,18 @@ pub async fn init_db(db_url: &str) -> Result<PgPool, sqlx::Error> {
     )
     .execute(&pool)
     .await?;
+    
+    println!("Migration DB vérifiée. Lignes affectées: {}", migration_result.rows_affected());
 
     Ok(pool)
 }
 
 pub async fn fetch_all_skills(pool: &PgPool) -> Result<Vec<SkillResponse>, sqlx::Error> {
-    let records = sqlx::query(
+    let skills = sqlx::query_as::<_, SkillResponse>(
         "SELECT id, name, description, github_url FROM remote_skills ORDER BY id DESC"
     )
     .fetch_all(pool)
     .await?;
-
-    let mut skills = Vec::new();
-    for r in records {
-        skills.push(SkillResponse {
-            id: r.get("id"),
-            name: r.get("name"),
-            description: r.get("description"),
-            github_url: r.get("github_url"),
-        });
-    }
 
     Ok(skills)
 }

@@ -7,7 +7,7 @@ use serde::Serialize;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, sqlx::FromRow)]
 pub struct SkillResponse {
     id: i32,
     name: String,
@@ -24,14 +24,24 @@ pub struct AppState {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Démarrage du serveur Railway Skills Pal...");
 
-    let db_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://postgres:postgres@localhost/skillspal".to_string());
+    let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        println!("⚠️  ATTENTION: DATABASE_URL non définie. Utilisation du fallback local.");
+        "postgres://postgres:postgres@localhost/skillspal".to_string()
+    });
     
     let pool = db::init_db(&db_url).await?;
     
-    // Remplir le cache en mémoire au démarrage
-    let initial_skills = db::fetch_all_skills(&pool).await.unwrap_or_default();
-    println!("Cache initialisé avec {} skills.", initial_skills.len());
+    // Remplir le cache en mémoire au démarrage avec log d'erreur
+    let initial_skills = match db::fetch_all_skills(&pool).await {
+        Ok(skills) => {
+            println!("Cache initialisé avec {} skills.", skills.len());
+            skills
+        },
+        Err(e) => {
+            eprintln!("⚠️  ERREUR CRITIQUE: Impossible de charger les skills depuis la BDD au démarrage: {}", e);
+            Vec::new()
+        }
+    };
     
     let state = Arc::new(AppState { 
         db: pool,
@@ -44,16 +54,49 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(dashboard::serve_dashboard))
         .route("/api/skills", get(get_skills))
         .layer(tower::limit::GlobalConcurrencyLimitLayer::new(100))
-        .with_state(state);
+        .with_state(state.clone());
 
     let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
     let addr: SocketAddr = format!("0.0.0.0:{}", port).parse()?;
     
     println!("Serveur lancé sur http://{}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await?;
-    axum::serve(listener, app).await?;
+    
+    // Graceful shutdown
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
+
+    println!("Serveur arrêté proprement. Fermeture des connexions DB...");
+    state.db.close().await;
 
     Ok(())
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("Echec de l'installation du handler Ctrl+C");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("Echec de l'installation du handler SIGTERM")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+    
+    println!("\nSignal d'arrêt reçu, lancement du graceful shutdown...");
 }
 
 async fn get_skills(
