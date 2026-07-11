@@ -11,11 +11,18 @@ pub async fn download_skill(github_url: &str) -> Result<String, String> {
         url = format!("{}/archive/refs/heads/main.zip", url.trim_end_matches('/'));
     }
 
-    let client = Client::new();
-    let response = client.get(&url)
+    let client = Client::builder().timeout(std::time::Duration::from_secs(30)).build().map_err(|e| e.to_string())?;
+    let mut response = client.get(&url)
         .header("User-Agent", "Skills-Pal-App")
         .send().await.map_err(|e| e.to_string())?;
     
+    if response.status() == reqwest::StatusCode::NOT_FOUND && url.ends_with("main.zip") {
+        let fallback_url = url.replace("main.zip", "master.zip");
+        response = client.get(&fallback_url)
+            .header("User-Agent", "Skills-Pal-App")
+            .send().await.map_err(|e| e.to_string())?;
+    }
+
     if !response.status().is_success() {
         return Err(format!("Failed to download plugin: {}", response.status()));
     }

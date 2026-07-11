@@ -1,8 +1,7 @@
 use colored::Colorize;
 use std::fs;
-use std::path::Path;
-
-const HOOK_PATH: &str = ".git/hooks/pre-commit";
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 const HOOK_SCRIPT: &str = r#"#!/bin/sh
 # Skills Pal — Pre-commit Hook
@@ -28,46 +27,57 @@ echo "✅ Skills Pal: Aucune erreur bloquante. Commit autorisé."
 exit 0
 "#;
 
-pub fn install_hook() -> Result<(), String> {
-    // Vérifier qu'on est dans un dépôt Git
-    if !Path::new(".git").exists() {
+fn get_git_hook_path() -> Result<PathBuf, String> {
+    let output = Command::new("git")
+        .args(["rev-parse", "--git-dir"])
+        .output()
+        .map_err(|e| format!("Erreur lors de l'exécution de git: {}", e))?;
+
+    if !output.status.success() {
         return Err(format!(
             "{} Aucun dépôt Git détecté dans ce dossier.\n  {} Lancez d'abord {}",
             "❌", "→".dimmed(), "git init".cyan()
         ));
     }
 
-    // Créer le dossier hooks s'il n'existe pas
-    let hooks_dir = Path::new(".git/hooks");
+    let git_dir = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let hooks_dir = Path::new(&git_dir).join("hooks");
+    
     if !hooks_dir.exists() {
-        fs::create_dir_all(hooks_dir)
-            .map_err(|e| format!("Impossible de créer .git/hooks: {}", e))?;
+        fs::create_dir_all(&hooks_dir)
+            .map_err(|e| format!("Impossible de créer le dossier hooks: {}", e))?;
     }
 
-    // Vérifier si un hook existe déjà
-    if Path::new(HOOK_PATH).exists() {
-        let existing = fs::read_to_string(HOOK_PATH).unwrap_or_default();
+    Ok(hooks_dir.join("pre-commit"))
+}
+
+pub fn install_hook() -> Result<(), String> {
+    println!("{} Note sur la compatibilité Windows : Ce hook bash nécessite Git Bash, WSL ou MSYS2 pour fonctionner correctement sous Windows.", "ℹ".cyan());
+
+    let hook_path = get_git_hook_path()?;
+
+    if hook_path.exists() {
+        let existing = fs::read_to_string(&hook_path).unwrap_or_default();
         if existing.contains("Skills Pal") {
             println!("{} Le hook pre-commit Skills Pal est déjà installé.", "ℹ".cyan());
             return Ok(());
         } else {
             println!("{} Un hook pre-commit existe déjà (non créé par Skills Pal).", "⚠".yellow());
-            println!("  {} Il a été remplacé. L'ancien est sauvegardé dans {}", "→".dimmed(), ".git/hooks/pre-commit.backup".dimmed());
-            fs::copy(HOOK_PATH, ".git/hooks/pre-commit.backup")
+            let backup_path = hook_path.with_extension("backup");
+            println!("  {} Il a été remplacé. L'ancien est sauvegardé dans {}", "→".dimmed(), backup_path.display().to_string().dimmed());
+            fs::copy(&hook_path, &backup_path)
                 .map_err(|e| format!("Impossible de sauvegarder l'ancien hook: {}", e))?;
         }
     }
 
-    // Écrire le hook
-    fs::write(HOOK_PATH, HOOK_SCRIPT)
+    fs::write(&hook_path, HOOK_SCRIPT)
         .map_err(|e| format!("Impossible d'écrire le hook: {}", e))?;
 
-    // Rendre le hook exécutable (Unix uniquement)
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
         let perms = fs::Permissions::from_mode(0o755);
-        fs::set_permissions(HOOK_PATH, perms)
+        fs::set_permissions(&hook_path, perms)
             .map_err(|e| format!("Impossible de rendre le hook exécutable: {}", e))?;
     }
 
@@ -78,24 +88,31 @@ pub fn install_hook() -> Result<(), String> {
 }
 
 pub fn uninstall_hook() -> Result<(), String> {
-    if !Path::new(HOOK_PATH).exists() {
+    let hook_path = match get_git_hook_path() {
+        Ok(path) => path,
+        Err(_) => {
+            println!("{} Aucun dépôt Git détecté.", "ℹ".cyan());
+            return Ok(());
+        }
+    };
+
+    if !hook_path.exists() {
         println!("{} Aucun hook pre-commit à supprimer.", "ℹ".cyan());
         return Ok(());
     }
 
-    // Vérifier que c'est bien un hook Skills Pal
-    let content = fs::read_to_string(HOOK_PATH).unwrap_or_default();
+    let content = fs::read_to_string(&hook_path).unwrap_or_default();
     if !content.contains("Skills Pal") {
         println!("{} Le hook pre-commit existant n'a pas été créé par Skills Pal. Suppression annulée.", "⚠".yellow());
         return Ok(());
     }
 
-    fs::remove_file(HOOK_PATH)
+    fs::remove_file(&hook_path)
         .map_err(|e| format!("Impossible de supprimer le hook: {}", e))?;
 
-    // Restaurer le backup s'il existe
-    if Path::new(".git/hooks/pre-commit.backup").exists() {
-        fs::rename(".git/hooks/pre-commit.backup", HOOK_PATH)
+    let backup_path = hook_path.with_extension("backup");
+    if backup_path.exists() {
+        fs::rename(&backup_path, &hook_path)
             .map_err(|e| format!("Impossible de restaurer le backup: {}", e))?;
         println!("{} Hook Skills Pal supprimé. L'ancien hook a été restauré.", "✔".green());
     } else {
