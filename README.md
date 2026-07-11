@@ -16,7 +16,6 @@
 1. **Un CLI ultra-rapide (Client)** : Scanne ton code source localement, identifie la dette technique ou le manque d'optimisation, et interroge une IA (OpenAI / Mistral) pour te recommander des plugins ou des compétences à adopter.
 2. **Un Serveur distant (Backend)** : Hébergé sur Railway, il scrape automatiquement GitHub toutes les 12h pour découvrir les nouveaux plugins créés par la communauté et met à jour sa base de données PostgreSQL pour te fournir des recommandations toujours à la pointe.
 
-Fini le code monolithique et obsolète. Laisse l'IA te guider vers les meilleurs outils de l'écosystème open-source !
 
 ---
 
@@ -31,9 +30,9 @@ Fini le code monolithique et obsolète. Laisse l'IA te guider vers les meilleurs
 
 ---
 
-## 🚀 Installation Universelle (La plus simple)
+## 🚀 Installation 
 
-Notre script d'installation magique télécharge le binaire compilé pour ton système. Aucun prérequis (ni Rust, ni Node, ni Python) n'est nécessaire !
+L'installation télécharge le binaire compilé pour ton système. Aucun prérequis n'est nécessaire !
 
 **Sur Mac / Linux :**
 ```bash
@@ -90,7 +89,7 @@ skills_pal clean
 
 ---
 
-## 🌍 Architecture & Déploiement (Pour les contributeurs)
+## 🌍 Architecture & Déploiement
 
 Ce dépôt contient deux binaires distincts :
 
@@ -122,14 +121,4 @@ Rien de plus simple :
 
 ---
 
-## 🔒 Sécurité & Confidentialité
 
-- **Audit complet validé** : Protection intégrale contre les injections SQL (via Parameter Binding).
-- **Rate-Limiting Global** : Le serveur utilise `tower::limit::GlobalConcurrencyLimitLayer` pour prévenir les attaques DDoS et la saturation de la DB.
-- **Transparence** : Ton code source n'est envoyé qu'à l'API LLM de ton choix (OpenAI/Mistral) sans intermédiaire obscur. Les clés API sont stockées uniquement en local (`.skillspal.toml` est `.gitignore`).
-
----
-
-<div align="center">
-  <i>Construit avec passion, Rust, et beaucoup de café ☕</i>
-</div>
