@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🧠 Skills Pal</h1>
-  <p><strong>L'assistant IA ultime pour éradiquer la dette technique et recommander des plugins de productivité.</strong></p>
+  <p><strong>L'assistant IA ultime pour améliorer ton code, éradiquer la dette technique et recommander des plugins d'ingénierie.</strong></p>
   
   [![Rust](https://img.shields.io/badge/Rust-1.88.0-orange.svg)](https://www.rust-lang.org)
   [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -13,19 +13,19 @@
 
 **Skills Pal** est un outil innovant divisé en deux parties (Architecture Client/Serveur) :
 
-1. **Un CLI ultra-rapide (Client)** : Scanne ton code source localement, identifie la dette technique ou le manque d'optimisation, et interroge une IA (OpenAI / Mistral) pour te recommander des plugins ou des compétences à adopter.
+1. **Un CLI premium ultra-rapide (Client)** : Scanne ton code source localement, identifie la dette technique ou le manque d'optimisation, et interroge une IA (Mistral, OpenAI, Anthropic, Ollama) pour te recommander des plugins, des outils ou des compétences globales d'ingénierie à adopter.
 2. **Un Serveur distant (Backend)** : Hébergé sur Railway, il scrape automatiquement GitHub toutes les 12h pour découvrir les nouveaux plugins créés par la communauté et met à jour sa base de données PostgreSQL pour te fournir des recommandations toujours à la pointe.
-
 
 ---
 
 ## ✨ Fonctionnalités Principales
 
-- 🤖 **Analyse IA Intelligente** : Fournit des recommandations de plugins basées sur l'analyse sémantique de ton code via LLM.
-- ⚡ **Multi-LLM** : Compatible avec les API OpenAI et Mistral AI.
-- 🌍 **Registre Communautaire Auto-Géré** : Le serveur découvre tout seul les plugins sur GitHub via le tag `skills-pal-plugin`.
+- 🤖 **Analyse IA Intelligente** : Recommandations basées sur l'analyse sémantique globale de ton projet.
+- ⚡ **Multi-LLM** : Compatible par défaut avec **Mistral AI**, mais supporte aussi OpenAI, Anthropic, et Ollama (en local).
+- 🎨 **Expérience CLI Premium** : Interface animée avec spinners, sorties colorées, et vérification passive des mises à jour.
+- 🌍 **Registre Communautaire Auto-Géré** : Le serveur découvre tout seul les plugins sur GitHub via ton propre dépôt ou un dépôt communautaire.
 - 🚀 **Performances Natives** : Écrit intégralement en Rust. Consommation mémoire minimale et exécution instantanée.
-- 🛡️ **Sécurisé & Anti-DDoS** : Serveur protégé par un Rate-Limiter (100 req/sec) et sans injections SQL possibles.
+- 🛡️ **Sécurisé & Anti-DDoS** : Serveur protégé par un Rate-Limiter (100 req/sec). Clés API stockées uniquement en local sur ton PC.
 - 📦 **Installation Universelle** : Binaires autonomes disponibles pour Windows, macOS, et Linux sans besoin d'installer Rust.
 
 ---
@@ -44,45 +44,50 @@ curl -fsSL https://raw.githubusercontent.com/Julien-Bui/skills_pal/main/install.
 iwr https://raw.githubusercontent.com/Julien-Bui/skills_pal/main/install.ps1 -useb | iex
 ```
 
-Une fois installé, tu peux lancer la configuration initiale n'importe où :
-```bash
-skills_pal init
-```
-
 ---
 
 ## 🛠️ Utilisation du CLI
 
-Le CLI est conçu pour être simple et direct. Voici les commandes principales :
+Le CLI est conçu pour être simple et modulaire grâce à de nombreux *flags*. Toutes les commandes acceptent l'argument `-v` ou `--verbose` pour afficher les logs de débogage techniques.
 
 ### 1. Initialisation
-Crée le fichier de configuration `.skillspal.toml` à la racine de ton projet.
+Crée le fichier de configuration. Par défaut, Skills Pal utilise **Mistral AI**.
 ```bash
+# Configuration locale classique (dans le dossier courant)
 skills_pal init
+
+# Configuration globale (utilisable partout sur ton PC) en une seule ligne !
+skills_pal init --global --provider openai_compatible --api-key "TA_CLE_API"
 ```
-*N'oublie pas d'y renseigner ta clé API (OpenAI ou Mistral) et l'URL de ton serveur Railway (`registry_url`).*
 
 ### 2. Analyse et Recommandation
-L'outil va lire ton code, l'envoyer à l'IA avec le contexte des plugins communautaires disponibles, et te suggérer les meilleures solutions.
+L'outil lit la structure de ton code, l'envoie à l'IA avec le contexte des plugins communautaires disponibles, et te suggère des outils pertinents pour l'architecture, la CI/CD ou la qualité de ton projet.
 ```bash
 skills_pal recom
+
+# Pour voir exactement le prompt envoyé à l'IA et l'URL interrogée :
+skills_pal -v recom
 ```
 
 ### 3. Scan de la Dette Technique
-Analyse le code source de ton projet pour trouver la dette technique explicite (commentaires `TODO`, `FIXME`) et les avertissements de compilation.
+Analyse le code source pour trouver la dette technique explicite (commentaires `TODO`, `FIXME`) et les avertissements de compilation (ex: Clippy pour Rust).
 ```bash
+# Scanner le dossier courant
 skills_pal scan
+
+# Scanner un dossier spécifique
+skills_pal scan --path ./src/backend
 ```
 
 ### 4. Mise à Jour Automatique
-Télécharge et installe automatiquement la dernière version de Skills Pal depuis Github.
+Télécharge et installe automatiquement la dernière version de Skills Pal depuis Github. *(Le CLI te préviendra automatiquement à la fin d'un scan si une mise à jour est disponible !)*
 ```bash
 skills_pal update
 ```
 *(Note : Si tu as installé l'outil globalement via le script d'installation, tu auras besoin des droits administrateur pour le mettre à jour : `sudo skills_pal update`)*
 
 ### 5. Nettoyage Complet (Reset)
-Supprime tous les fichiers générés localement par l'outil (la base de données locale, le dossier des plugins téléchargés, et le fichier de configuration). Idéal pour repartir à zéro.
+Supprime tous les fichiers générés localement par l'outil (base de données locale, dossier des plugins téléchargés, fichiers zip temporaires et fichier de configuration). Idéal pour repartir à zéro.
 ```bash
 skills_pal clean
 ```
@@ -112,13 +117,9 @@ Le serveur construira automatiquement les tables SQL, lancera son cache en RAM (
 
 ## 🧩 Créer un Plugin pour Skills Pal
 
-Tu as développé un outil ou un script génial et tu veux que Skills Pal le recommande aux autres développeurs ?
+Tu as développé un outil, une documentation ou un script génial et tu veux que Skills Pal le recommande aux autres développeurs ?
 Rien de plus simple :
 
 1. Crée un dépôt public sur GitHub.
-2. Ajoute le topic (tag) **`skills-pal-plugin`** dans la description de ton dépôt (bouton ⚙️ en haut à droite).
-3. Le serveur backend de Skills Pal scannera GitHub et l'ajoutera automatiquement à son registre public sous 12h !
-
----
-
-
+2. Ajoute tes skills au format Markdown dans un dossier `skills/` (avec les bonnes métadonnées Frontmatter).
+3. Le serveur backend de Skills Pal scannera le dossier et l'ajoutera automatiquement à sa base PostgreSQL toutes les 12h.
