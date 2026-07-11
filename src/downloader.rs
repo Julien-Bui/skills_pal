@@ -43,6 +43,12 @@ pub async fn download_skill(github_url: &str) -> Result<String, String> {
         
         let outpath = std::path::Path::new(PLUGINS_DIR).join(outpath);
 
+        let absolute_base = std::env::current_dir().unwrap_or_default().join(PLUGINS_DIR);
+        let absolute_out = std::env::current_dir().unwrap_or_default().join(&outpath);
+        if !absolute_out.starts_with(&absolute_base) {
+            continue; // Tentative de Path Traversal bloquée
+        }
+
         if (*file.name()).ends_with('/') {
             fs::create_dir_all(&outpath).unwrap_or_default();
         } else {

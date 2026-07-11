@@ -37,7 +37,12 @@ async fn scrape_github(client: &Client, state: &Arc<AppState>) -> Result<(), Box
     let mut url = "https://api.github.com/repos/Julien-Bui/skills-registry/contents/skills".to_string();
     
     loop {
-        let res = client.get(&url).send().await?;
+        let req = client.get(&url);
+        let req = match std::env::var("GITHUB_TOKEN") {
+            Ok(token) if !token.is_empty() => req.bearer_auth(token),
+            _ => req,
+        };
+        let res = req.send().await?;
         if !res.status().is_success() {
             eprintln!("Github a retourné une erreur lors de la lecture du dossier: {}", res.status());
             break;
@@ -51,7 +56,13 @@ async fn scrape_github(client: &Client, state: &Arc<AppState>) -> Result<(), Box
                 let skill_name = item.name.clone();
                 let raw_url = format!("https://raw.githubusercontent.com/Julien-Bui/skills-registry/main/skills/{}/SKILL.md", skill_name);
                 
-                match client.get(&raw_url).send().await {
+                let req = client.get(&raw_url);
+                let req = match std::env::var("GITHUB_TOKEN") {
+                    Ok(token) if !token.is_empty() => req.bearer_auth(token),
+                    _ => req,
+                };
+                
+                match req.send().await {
                     Ok(raw_res) => {
                         if raw_res.status().is_success() {
                             let content = raw_res.text().await.unwrap_or_default();

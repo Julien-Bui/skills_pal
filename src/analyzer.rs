@@ -71,7 +71,7 @@ fn run_todo_fixme_scan(project_path: &str, reports: &mut Vec<Report>) {
                 let reader = BufReader::new(file);
                 for (i, line_res) in reader.lines().enumerate() {
                     if let Ok(line) = line_res {
-                        if (line.contains("TODO") || line.contains("FIXME")) && !line.contains("line.contains(\"TODO") {
+                        if line.contains("TODO") || line.contains("FIXME") {
                             let rel_path = entry.path().strip_prefix(project_path).unwrap_or(entry.path());
                             reports.push(Report {
                                 id: None,
