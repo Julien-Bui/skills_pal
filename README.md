@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🧠 Skills Pal</h1>
+  <h1>🧠 Skills Pal (spal)</h1>
   <p><strong>L'assistant IA ultime pour améliorer ton code, éradiquer la dette technique et recommander des plugins d'ingénierie.</strong></p>
   
   [![Rust](https://img.shields.io/badge/Rust-1.88.0-orange.svg)](https://www.rust-lang.org)
@@ -50,11 +50,14 @@ iwr https://raw.githubusercontent.com/Julien-Bui/skills_pal/main/install.ps1 -us
 
 Le CLI est conçu pour être simple et modulaire grâce à de nombreux *flags*. Toutes les commandes acceptent l'argument `-v` ou `--verbose` pour afficher les logs de débogage techniques.
 
+> **💡 Astuce :** Pour aller plus vite, tu peux remplacer la commande `skills_pal` par son raccourci `spal` dans le terminal ! (ex: `spal scan`)
+
 ### 1. Initialisation
 Crée le fichier de configuration. Par défaut, Skills Pal utilise **Mistral AI**.
 ```bash
 # Configuration locale classique (dans le dossier courant)
-skills_pal init
+skills_pal init 
+# (Raccourci: spal init)
 
 # Configuration globale (utilisable partout sur ton PC) en une seule ligne !
 skills_pal init --global --provider openai_compatible --api-key "TA_CLE_API"
@@ -64,6 +67,7 @@ skills_pal init --global --provider openai_compatible --api-key "TA_CLE_API"
 L'outil lit la structure de ton code, l'envoie à l'IA avec le contexte des plugins communautaires disponibles, et te suggère des outils pertinents pour l'architecture, la CI/CD ou la qualité de ton projet.
 ```bash
 skills_pal recom
+# (Raccourci: spal recom)
 
 # Pour voir exactement le prompt envoyé à l'IA et l'URL interrogée :
 skills_pal -v recom
@@ -73,7 +77,8 @@ skills_pal -v recom
 Analyse le code source pour trouver la dette technique explicite (commentaires `TODO`, `FIXME`) et les avertissements de compilation (ex: Clippy pour Rust).
 ```bash
 # Scanner le dossier courant
-skills_pal scan
+skills_pal scan 
+# (Raccourci: spal scan)
 
 # Scanner un dossier spécifique
 skills_pal scan --path ./src/backend
@@ -83,6 +88,7 @@ skills_pal scan --path ./src/backend
 Affiche un menu de sélection flou (Fuzzy Select) dans ton terminal pour naviguer facilement parmi les skills disponibles sur le serveur et ouvrir leurs pages GitHub.
 ```bash
 skills_pal browse
+# (Raccourci: spal browse)
 ```
 
 ### 5. Git Hooks (Automatisation)
@@ -90,6 +96,7 @@ Bloque les commits qui contiennent de la dette technique ou des erreurs critique
 ```bash
 # Installer le hook (s'exécutera avant chaque git commit)
 skills_pal hook install
+# (Raccourci: spal hook install)
 
 # Le retirer (désactiver le blocage)
 skills_pal hook uninstall
@@ -101,12 +108,14 @@ skills_pal hook disable
 Vérifie en un clin d'œil que ton outil est parfaitement configuré (Clés API, Connectivité au serveur Railway, Dépôt Git).
 ```bash
 skills_pal doctor
+# (Raccourci: spal doctor)
 ```
 
 ### 7. Mise à Jour Automatique
 Télécharge et installe automatiquement la dernière version de Skills Pal depuis Github. *(Le CLI te préviendra automatiquement à la fin d'un scan si une mise à jour est disponible !)*
 ```bash
 skills_pal update
+# (Raccourci: spal update)
 ```
 *(Note : Si tu as installé l'outil globalement via le script d'installation, tu auras besoin des droits administrateur pour le mettre à jour : `sudo skills_pal update`)*
 
@@ -114,6 +123,7 @@ skills_pal update
 Supprime tous les fichiers générés localement par l'outil (base de données locale, dossier des plugins téléchargés, fichiers zip temporaires et fichier de configuration). Idéal pour repartir à zéro.
 ```bash
 skills_pal clean
+# (Raccourci: spal clean)
 ```
 
 ---
