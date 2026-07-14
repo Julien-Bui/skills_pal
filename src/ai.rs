@@ -80,7 +80,7 @@ async fn fetch_remote_skills(client: &Client, conf: &config::SkillsPalConfig, ve
     Vec::new()
 }
 
-fn analyze_project_stack() -> String {
+pub fn analyze_project_stack() -> String {
     println!("\n{} Analyse dynamique du projet...", "🔍".to_string());
     let mut extensions = std::collections::HashMap::new();
 
@@ -217,3 +217,39 @@ async fn call_llm_api(client: &Client, conf: &config::SkillsPalConfig, prompt_sy
     ai_spinner.finish_with_message(format!("{} Réponse reçue !", "✔".green()));
     Ok(reply)
 }
+
+pub async fn generate_commit_message(diff: &str, verbose: bool) -> Result<String, String> {
+    let conf = config::get_config()?;
+    let client = Client::builder()
+        .user_agent("Skills-Pal-CLI/1.0")
+        .timeout(Duration::from_secs(30))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let prompt_system = "Tu es l'IA de Skills Pal. Analyse le diff Git fourni et génère un message de commit concis au format Conventional Commits (ex: feat: ..., fix: ..., refactor: ...). Ne renvoie QUE le message, sans rien d'autre. Pas d'introduction, pas de guillemets autour, et pas de conclusion.";
+    let prompt_user = format!("Voici le diff Git :\n{}", diff);
+
+    let mut reply = call_llm_api(&client, &conf, prompt_system, &prompt_user, verbose).await?;
+    
+    // Nettoyage de sécurité si l'IA renvoie quand même des guillemets
+    reply = reply.trim().trim_matches('"').trim_matches('\'').to_string();
+    
+    Ok(reply)
+}
+
+pub async fn generate_readme(stack: &str, sample: &str, verbose: bool) -> Result<String, String> {
+    let conf = config::get_config()?;
+    let client = Client::builder()
+        .user_agent("Skills-Pal-CLI/1.0")
+        .timeout(Duration::from_secs(60))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let prompt_system = "Tu es l'IA de Skills Pal. Rédige un fichier README.md complet et professionnel pour ce projet. Inclus un titre, une description, une section d'installation et d'utilisation. Ne renvoie QUE le contenu Markdown, sans bloc ```markdown autour.";
+    let prompt_user = format!("Stack du projet: {}\n\nAperçu du code source principal :\n{}", stack, sample);
+
+    let reply = call_llm_api(&client, &conf, prompt_system, &prompt_user, verbose).await?;
+    
+    Ok(reply)
+}
+
