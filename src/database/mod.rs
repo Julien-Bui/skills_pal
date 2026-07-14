@@ -18,6 +18,15 @@ pub fn init_db(db_path: &str) -> Result<DbState> {
         [],
     )?;
 
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS scan_history (
+            id INTEGER PRIMARY KEY,
+            scan_date TEXT NOT NULL,
+            todo_count INTEGER NOT NULL
+        )",
+        [],
+    )?;
+
     // Pas de fausses données en production
 
     Ok(Arc::new(Mutex::new(conn)))
@@ -47,4 +56,28 @@ pub fn delete_skill(db: &DbState, id: i64) -> Result<()> {
     let conn = db.lock().map_err(|_| rusqlite::Error::InvalidQuery)?;
     conn.execute("DELETE FROM installed_skills WHERE id = ?1", params![id])?;
     Ok(())
+}
+
+pub fn insert_scan_history(db: &DbState, count: i32) -> Result<()> {
+    let conn = db.lock().map_err(|_| rusqlite::Error::InvalidQuery)?;
+    let date = chrono::Local::now().format("%Y-%m-%d %H:%M").to_string();
+    conn.execute(
+        "INSERT INTO scan_history (scan_date, todo_count) VALUES (?1, ?2)",
+        params![date, count],
+    )?;
+    Ok(())
+}
+
+pub fn get_scan_history(db: &DbState) -> Result<Vec<(String, i32)>> {
+    let conn = db.lock().map_err(|_| rusqlite::Error::InvalidQuery)?;
+    let mut stmt = conn.prepare("SELECT scan_date, todo_count FROM scan_history ORDER BY id ASC")?;
+    let history_iter = stmt.query_map([], |row| {
+        Ok((row.get(0)?, row.get(1)?))
+    })?;
+
+    let mut history = Vec::new();
+    for item in history_iter {
+        history.push(item?);
+    }
+    Ok(history)
 }
