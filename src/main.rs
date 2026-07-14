@@ -9,6 +9,7 @@ mod browse;
 mod doctor;
 mod hooks;
 mod utils;
+mod git;
 
 use clap::Parser;
 use colored::Colorize;
@@ -43,8 +44,8 @@ async fn main() {
                         println!("{} {}", "✅".green(), "Aucun TODO ni FIXME trouvé. Ton projet est parfaitement clean !".green());
                     } else {
                         println!("\n{} {} problème(s) trouvé(s) :\n", "📋".to_string(), reports.len().to_string().bold());
-                        for r in reports {
-                            let path = r.file_path;
+                        for r in reports.iter() {
+                            let path = &r.file_path;
                             let line = r.line_number.map(|l| l.to_string()).unwrap_or_default();
                             let severity_colored = match r.severity.as_str() {
                                 "error" => format!("[{}]", r.severity.to_uppercase()).red().bold().to_string(),
@@ -53,6 +54,11 @@ async fn main() {
                             };
                             println!("  {} {}:{} → {}", severity_colored, path.dimmed(), line.dimmed(), r.message);
                         }
+                    }
+
+                    // Enregistrer l'historique
+                    if let Ok(db) = database::init_db(config::DB_PATH) {
+                        let _ = database::insert_scan_history(&db, reports.len() as i32);
                     }
                 },
                 Err(e) => eprintln!("{} {}", "❌".red(), e.red()),
@@ -151,6 +157,118 @@ async fn main() {
             };
             if let Err(e) = result {
                 eprintln!("{}", e);
+            }
+        },
+        cli::Commands::Commit => {
+            match git::get_staged_diff() {
+                Ok(diff) => {
+                    println!("{} Récupération du diff ({} caractères)...", "📦".cyan(), diff.len());
+                    match ai::generate_commit_message(&diff, verbose).await {
+                        Ok(msg) => {
+                            println!("\n{} Message de commit généré par l'IA :\n", "✨".bold().yellow());
+                            println!("  {}\n", msg.cyan().bold());
+                            
+                            let confirm = dialoguer::Confirm::new()
+                                .with_prompt("Veux-tu utiliser ce message pour le commit ?")
+                                .default(true)
+                                .interact()
+                                .unwrap_or(false);
+
+                            if confirm {
+                                if let Err(e) = git::commit(&msg) {
+                                    eprintln!("{} {}", "❌".red(), e.red());
+                                } else {
+                                    println!("{} Commit créé avec succès !", "✔".green());
+                                }
+                            } else {
+                                println!("{} Opération annulée.", "ℹ".dimmed());
+                            }
+                        },
+                        Err(e) => eprintln!("{} Erreur IA : {}", "❌".red(), e.red()),
+                    }
+                },
+                Err(e) => eprintln!("{} {}", "❌".red(), e.red()),
+            }
+        },
+        cli::Commands::Stats => {
+            if let Ok(db) = database::init_db(config::DB_PATH) {
+                if let Ok(history) = database::get_scan_history(&db) {
+                    println!("\n{} Évolution de la dette technique :\n", "📈".bold().cyan());
+                    if history.is_empty() {
+                        println!("  {}", "Aucun historique disponible. Lance un scan d'abord !".dimmed());
+                    } else {
+                        for (date, count) in &history {
+                            let trend = if *count == 0 {
+                                "✨ Parfait".green()
+                            } else if *count < 10 {
+                                "⚠️ Gérable".yellow()
+                            } else {
+                                "🚨 Critique".red()
+                            };
+                            println!("  {} - {} problèmes ({})", date.dimmed(), count.to_string().bold(), trend);
+                        }
+                    }
+                }
+            } else {
+                eprintln!("{} Impossible d'accéder à la base locale.", "❌".red());
+            }
+        },
+        cli::Commands::Doc => {
+            let stack = ai::analyze_project_stack();
+            println!("{} Génération du README par l'IA...", "📝".cyan());
+            
+            // On essaie de lire un fichier principal
+            let mut sample = String::new();
+            if let Ok(content) = std::fs::read_to_string("src/main.rs") {
+                sample = content.chars().take(2000).collect();
+            } else if let Ok(content) = std::fs::read_to_string("index.js") {
+                sample = content.chars().take(2000).collect();
+            }
+
+            match ai::generate_readme(&stack, &sample, verbose).await {
+                Ok(doc) => {
+                    println!("\n{} README.md généré avec succès :\n", "✨".bold().yellow());
+                    let preview: String = doc.lines().take(10).collect::<Vec<_>>().join("\n");
+                    println!("{}\n[...]\n", preview.cyan());
+
+                    let confirm = dialoguer::Confirm::new()
+                        .with_prompt("Écraser ton README.md actuel avec cette version ?")
+                        .default(false)
+                        .interact()
+                        .unwrap_or(false);
+
+                    if confirm {
+                        if let Err(e) = std::fs::write("README.md", doc) {
+                            eprintln!("{} Erreur d'écriture: {}", "❌".red(), e);
+                        } else {
+                            println!("{} README.md mis à jour !", "✔".green());
+                        }
+                    } else {
+                        println!("{} Opération annulée.", "ℹ".dimmed());
+                    }
+                },
+                Err(e) => eprintln!("{} Erreur IA : {}", "❌".red(), e.red()),
+            }
+        },
+        cli::Commands::Ignore => {
+            let stack = ai::analyze_project_stack();
+            println!("{} Configuration du .gitignore intelligent...", "🧹".cyan());
+            
+            let mut additions = Vec::new();
+            if stack.contains(".rs") { additions.extend(vec!["/target/", "Cargo.lock"]); }
+            if stack.contains(".js") || stack.contains(".ts") { additions.push("node_modules/"); }
+            if stack.contains(".py") { additions.extend(vec!["__pycache__/", "venv/", ".env"]); }
+
+            if additions.is_empty() {
+                println!("{} Aucune règle spécifique détectée pour cette stack.", "ℹ".dimmed());
+            } else {
+                use std::io::Write;
+                let mut file = std::fs::OpenOptions::new().create(true).append(true).open(".gitignore").unwrap();
+                writeln!(file, "\n# Skills Pal Smart Gitignore").unwrap();
+                for rule in &additions {
+                    writeln!(file, "{}", rule).unwrap();
+                }
+                println!("{} Règles ajoutées au .gitignore : {}", "✔".green(), additions.join(", ").yellow());
             }
         },
     }

@@ -54,6 +54,14 @@ pub enum Commands {
         #[command(subcommand)]
         action: HookAction,
     },
+    /// Génère un message de commit via l'IA et l'exécute
+    Commit,
+    /// Affiche les statistiques de la dette technique
+    Stats,
+    /// Génère un fichier README.md par IA basé sur le code
+    Doc,
+    /// Auto-complète le fichier .gitignore selon la stack
+    Ignore,
 }
 
 #[derive(Subcommand)]
