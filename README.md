@@ -32,7 +32,7 @@
 
 ## 🚀 Installation 
 
-L'installation télécharge le binaire compilé pour ton système. Aucun prérequis n'est nécessaire !
+L'installation télécharge les binaires compilés (`skills_pal` et son raccourci `spal`) pour ton système. Aucun prérequis n'est nécessaire !
 
 **Sur Mac / Linux :**
 ```bash
