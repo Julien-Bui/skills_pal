@@ -2,6 +2,7 @@ use crate::models::Report;
 use std::process::Command;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use regex::Regex;
 use crate::utils::get_project_files;
 
 pub async fn scan_project(project_path: String) -> Result<Vec<Report>, String> {
@@ -12,6 +13,9 @@ pub async fn scan_project(project_path: String) -> Result<Vec<Report>, String> {
 
     // 2. VRAIE ANALYSE DETTE TECHNIQUE (Recherche de TODO/FIXME)
     run_todo_fixme_scan(&project_path, &mut reports);
+
+    // 3. SECRET SCANNER (Recherche de clés API en clair)
+    run_secret_scan(&project_path, &mut reports);
 
     Ok(reports)
 }
@@ -82,6 +86,41 @@ fn run_todo_fixme_scan(project_path: &str, reports: &mut Vec<Report>) {
                                 severity: "warning".to_string(),
                                 details: serde_json::json!({"snippet": line.trim()}),
                             });
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn run_secret_scan(project_path: &str, reports: &mut Vec<Report>) {
+    let patterns = vec![
+        ("OpenAI API Key", Regex::new(r"sk-[a-zA-Z0-9]{20,}").unwrap()),
+        ("GitHub Token", Regex::new(r"ghp_[a-zA-Z0-9]{36}").unwrap()),
+        ("AWS Access Key", Regex::new(r"AKIA[0-9A-Z]{16}").unwrap()),
+    ];
+
+    for entry in get_project_files(project_path) {
+        // Scan tous les fichiers texte/code
+        if entry.file_type().is_file() {
+            if let Ok(file) = File::open(entry.path()) {
+                let reader = BufReader::new(file);
+                for (i, line_res) in reader.lines().enumerate() {
+                    if let Ok(line) = line_res {
+                        for (name, regex) in &patterns {
+                            if regex.is_match(&line) {
+                                let rel_path = entry.path().strip_prefix(project_path).unwrap_or(entry.path());
+                                reports.push(Report {
+                                    id: None,
+                                    skill_id: 3, 
+                                    file_path: rel_path.display().to_string().replace("\\", "/"),
+                                    line_number: Some((i + 1) as i32),
+                                    message: format!("Secret détecté : {}", name),
+                                    severity: "error".to_string(), // Sévérité error bloque le hook
+                                    details: serde_json::json!({"snippet": "SECRET CACHÉ"}),
+                                });
+                            }
                         }
                     }
                 }
