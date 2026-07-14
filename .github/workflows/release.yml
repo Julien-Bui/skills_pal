@@ -34,9 +34,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Build and Upload skills_pal binary
+      - name: Build and Upload skills_pal and spal binaries
         uses: taiki-e/upload-rust-binary-action@v1
         with:
-          bin: skills_pal
+          bin: skills_pal,spal
           target: ${{ matrix.target }}
           token: ${{ secrets.GITHUB_TOKEN }}
