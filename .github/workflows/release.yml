@@ -38,5 +38,6 @@ jobs:
         uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: skills_pal,spal
+          archive: skills_pal
           target: ${{ matrix.target }}
           token: ${{ secrets.GITHUB_TOKEN }}
