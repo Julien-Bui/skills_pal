@@ -39,7 +39,9 @@ curl -sL -f "${DOWNLOAD_URL}" -o skills_pal.tar.gz || {
 tar -xzf skills_pal.tar.gz
 
 chmod +x skills_pal
+chmod +x spal
 sudo mv skills_pal /usr/local/bin/
+sudo mv spal /usr/local/bin/
 
 rm skills_pal.tar.gz
 
